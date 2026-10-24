@@ -147,9 +147,9 @@ function requireAdminAuth(): void {
 function homepageDefaults(): array {
     return [
         'hero_eyebrow' => 'Celebrations, stays & swimming in Kulur, Mangalore',
-        'hero_heading' => 'Make room for memorable moments.',
+        'hero_heading' => 'Some places bring you closer.',
         'hero_description' => 'Bring your people together at Charles Gala Venue. Explore our event spaces, enjoy time by the swimming pool, or plan a comfortable stay in Kulur, Mangalore.',
-        'hero_image_path' => 'assets/images/placeholder.svg',
+        'hero_image_path' => 'assets/images/resort/lawn.jpg',
         'pool_heading' => 'Your next poolside escape',
         'pool_description' => 'Make time for a refreshing swim with family and friends at Charles Gala Venue in Kulur, Mangalore. Ask our team about current pool timings, entry rates and private bookings before your visit.',
     ];
@@ -158,6 +158,8 @@ function homepageDefaults(): array {
 /** Accept local images or HTTPS media URLs, with a dependable empty-state asset. */
 function publicImage(?string $path): string {
     $path = trim($path ?? '');
+    $originals = ['hero.jpg'=>'lawn', 'open_ground.jpg'=>'lawn', 'mini_hall.jpg'=>'hall', 'pool.jpg'=>'pool-building'];
+    if (preg_match('~^(uploads/(about|gallery|offerings)|assets/images)/[^/]+$~', $path) && isset($originals[basename($path)])) return 'assets/images/resort/' . $originals[basename($path)] . '.jpg';
     if (preg_match('~^(?:uploads/(?:about|gallery|offerings)|assets/images)/(?:hero|pool|rooms|mini_hall|open_ground|decorations)\.jpg$~D', $path)) return 'assets/images/placeholder.svg';
     if (filter_var($path, FILTER_VALIDATE_URL) && parse_url($path, PHP_URL_SCHEME) === 'https') return $path;
     if ($path !== '' && !str_contains($path, '..') && preg_match('~^(uploads|assets/images)/[a-zA-Z0-9_./-]+$~D', $path)) return $path;
