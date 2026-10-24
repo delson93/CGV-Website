@@ -18,13 +18,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // A. Update Contact, WhatsApp & Social Media Settings in MySQL
         if ($action === 'save_settings') {
-            $keys = ['site_name', 'phone_primary', 'whatsapp_number', 'whatsapp_default_msg', 'email', 'address', 'plus_code', 'instagram_url', 'youtube_url', 'facebook_url', 'google_maps_url'];
+            $keys = ['site_name', 'phone_primary', 'whatsapp_number', 'whatsapp_default_msg', 'email', 'address', 'plus_code', 'instagram_url', 'youtube_url', 'facebook_url', 'google_maps_url', 'google_maps_embed', 'latitude', 'longitude'];
             foreach ($keys as $k) {
                 if (isset($_POST[$k])) {
                     updateSiteSetting($k, trim($_POST[$k]));
                 }
             }
             $flash = 'WhatsApp backend contact, Call number, and Social Media links saved to MySQL!';
+        }
+
+        if ($action === 'save_homepage') {
+            foreach (homepageDefaults() as $key => $default) {
+                if ($key !== 'hero_image_path') updateSiteSetting($key, trim((string)($_POST[$key] ?? $default)));
+            }
+            $image = handleImageUpload($_FILES['hero_image'] ?? [], 'about');
+            if ($image) updateSiteSetting('hero_image_path', $image);
+            if (isset($_POST['reset_hero'])) updateSiteSetting('hero_image_path', 'assets/images/placeholder.svg');
+            $flash = 'Homepage content and background saved.';
         }
 
         // B. Update SEO Keywords & Gemini API Key in MySQL
@@ -138,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$settings  = getSiteSettings();
+$settings  = getSiteSettings() + homepageDefaults();
 $about     = getAboutSection();
 $offerings = getOfferings(false);
 $gallery   = getGalleryItems();
@@ -147,6 +157,7 @@ $gallery   = getGalleryItems();
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MySQL Admin CMS — <?= htmlspecialchars($settings['site_name']) ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
@@ -175,6 +186,23 @@ $gallery   = getGalleryItems();
         <?php if ($errorMsg): ?>
             <div class="alert-error"><?= htmlspecialchars($errorMsg) ?></div>
         <?php endif; ?>
+
+        <section class="admin-card">
+            <h2>Homepage design & background</h2>
+            <p>Upload your own venue photograph for the hero background. Until then, a neutral placeholder is displayed. Offering, gallery and About images remain editable in their sections below.</p>
+            <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                <input type="hidden" name="action" value="save_homepage">
+                <?php foreach (homepageDefaults() as $key => $default): if ($key === 'hero_image_path') continue; ?>
+                    <label for="<?= $key ?>"><?= htmlspecialchars(ucwords(str_replace('_', ' ', $key))) ?></label>
+                    <textarea id="<?= $key ?>" name="<?= $key ?>" rows="2" required><?= htmlspecialchars($settings[$key]) ?></textarea>
+                <?php endforeach; ?>
+                <label for="hero_image">Homepage background image (JPEG, PNG or WebP; landscape recommended)</label>
+                <input id="hero_image" type="file" name="hero_image" accept="image/jpeg,image/png,image/webp">
+                <label><input type="checkbox" name="reset_hero" value="1" style="width:auto"> Use the neutral background placeholder</label>
+                <button class="btn btn-gold" type="submit">Save homepage</button>
+            </form>
+        </section>
 
         <!-- 1. Gemini AI SEO Checker & Auto-Fixer -->
         <section class="admin-card">
@@ -360,6 +388,11 @@ $gallery   = getGalleryItems();
                         <input type="url" name="facebook_url" value="<?= htmlspecialchars($settings['facebook_url']) ?>">
                     </div>
                 </div>
+                <div class="form-grid">
+                    <?php foreach (['google_maps_url' => 'Google Maps location URL', 'google_maps_embed' => 'Google Maps embed URL (src only)', 'latitude' => 'Latitude', 'longitude' => 'Longitude'] as $key => $label): ?>
+                    <div><label for="<?= $key ?>"><?= $label ?></label><input id="<?= $key ?>" name="<?= $key ?>" type="text" value="<?= htmlspecialchars($settings[$key] ?? '') ?>"></div>
+                    <?php endforeach; ?>
+                </div>
                 <label>Default Floating WhatsApp Greeting Message</label>
                 <input type="text" name="whatsapp_default_msg" value="<?= htmlspecialchars($settings['whatsapp_default_msg']) ?>">
                 <button type="submit" class="btn btn-gold" style="margin-top:1rem;">Save Contact & Social Settings to MySQL</button>
@@ -418,3 +451,4 @@ $gallery   = getGalleryItems();
     </script>
 </body>
 </html>
+

@@ -7,13 +7,18 @@
  */
 require_once __DIR__ . '/includes/functions.php';
 
-$settings  = getSiteSettings();
+$settings  = getSiteSettings() + homepageDefaults();
 $about     = getAboutSection();
 $offerings = getOfferings(true);
 $gallery   = getGalleryItems();
 
 $globalWaUrl = buildWhatsAppUrl($settings['whatsapp_number'], $settings['whatsapp_default_msg']);
 $globalCallUrl = buildCallUrl($settings['phone_primary']);
+$heroImage = publicImage($settings['hero_image_path']);
+$poolImage = 'assets/images/placeholder.svg';
+foreach ($offerings as $offering) {
+    if (($offering['category'] ?? '') === 'pool') { $poolImage = publicImage($offering['image_path']); break; }
+}
 $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
 ?>
 <!DOCTYPE html>
@@ -24,21 +29,23 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/public.css?v=2">
 </head>
-<body>
+<body class="public-site">
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <!-- Top Bar (No raw phone number displayed — Call Icon & WhatsApp Icon trigger actions on click) -->
     <div class="top-bar">
         <div class="container top-bar-inner">
-            <span>📍 Kulur, Melkoppala, Mangalore 575013 (<?= htmlspecialchars($settings['plus_code']) ?>)</span>
+            <span><?= htmlspecialchars($settings['address']) ?></span>
             <div class="top-bar-links">
                 <button type="button" class="icon-trigger-btn" onclick="openCallModal('Reservation Desk — Charles Gala Venue')" aria-label="Call Venue">
-                    📞 Call Venue
+                    Call Venue
                 </button>
                 <button type="button" class="icon-trigger-btn wa-trigger" onclick="openWhatsAppModal(<?= htmlspecialchars(json_encode($settings['whatsapp_default_msg'])) ?>, 'General Booking Inquiry')" aria-label="WhatsApp Message">
-                    💬 WhatsApp
+                    WhatsApp
                 </button>
-                <a href="mailto:<?= htmlspecialchars($settings['email']) ?>">✉️ <?= htmlspecialchars($settings['email']) ?></a>
-                <a href="admin/login.php" class="admin-link">🔒 Admin Login</a>
+                <a href="mailto:<?= htmlspecialchars($settings['email']) ?>"><?= htmlspecialchars($settings['email']) ?></a>
+
             </div>
         </div>
     </div>
@@ -53,57 +60,53 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
                     <span class="brand-sub">KULUR • MELKOPPALA • MANGALORE</span>
                 </div>
             </a>
-            <nav class="main-nav">
-                <a href="#offerings">What We Offer</a>
+            <button type="button" class="menu-toggle" aria-expanded="false" aria-controls="main-navigation">Menu <span aria-hidden="true">☰</span></button>
+            <nav class="main-nav" id="main-navigation" aria-label="Main navigation">
+                <a href="#offerings">Our Spaces</a>
                 <a href="#pool-spotlight">Pool Booking</a>
                 <a href="#about">About Us</a>
-                <a href="#gallery">Gallery & Video</a>
-                <a href="#location">Map & Contact</a>
+                <a href="#gallery">Gallery</a>
+                <a href="#location">Contact</a>
             </nav>
             <div style="display:flex;align-items:center;gap:10px;">
                 <button type="button" class="btn-circle-call" onclick="openCallModal('Direct Header Call')" title="Call Charles Gala Venue" aria-label="Call Charles Gala Venue">
-                    📞
+                    
                 </button>
                 <button type="button" class="btn btn-gold" onclick="openWhatsAppModal(<?= htmlspecialchars(json_encode($settings['whatsapp_default_msg'])) ?>, 'Direct Header Book Now')">
-                    💬 Book Now
+                    Book Now
                 </button>
             </div>
         </div>
     </header>
 
     <!-- Hero Section -->
-    <section id="home" class="hero-section" style="background-image: linear-gradient(135deg, rgba(8,20,16,0.88) 0%, rgba(12,28,22,0.72) 100%), url('<?= htmlspecialchars($about['image_path']) ?>');">
+    <main id="main-content">
+    <section id="home" class="hero-section">
+        <img class="hero-background" src="<?= htmlspecialchars($heroImage) ?>" alt="" fetchpriority="high" width="1920" height="1080">
         <div class="container hero-content">
-            <span class="hero-pill">✨ Mangalore's Premier Gala Venue, Stay & Public Pool</span>
-            <h1>Celebrate Grandly at <span class="gold-text"><?= htmlspecialchars($settings['site_name']) ?></span></h1>
-            <p class="hero-lead">
-                Experience the <strong>best stay in Mangalore</strong>, our <strong>1,500-person Open Ground Hall</strong>, <strong>250-person AC Mini Hall</strong>, bespoke <strong>Decorations & Lightings</strong>, and crystal-clear <strong>Swimming Pool open for anyone</strong> in Kulur, Melkoppala (575013).
-            </p>
+            <span class="hero-pill"><?= htmlspecialchars($settings['hero_eyebrow']) ?></span>
+            <h1><?= htmlspecialchars($settings['hero_heading']) ?><br><span class="gold-text"><?= htmlspecialchars($settings['site_name']) ?></span></h1>
+            <p class="hero-lead"><?= htmlspecialchars($settings['hero_description']) ?></p>
             <div class="hero-actions">
                 <button type="button" class="btn btn-whatsapp-lg" onclick="openWhatsAppModal(<?= htmlspecialchars(json_encode($settings['whatsapp_default_msg'])) ?>, 'Hero Instant WhatsApp Booking')">
-                    💬 Book Instantly on WhatsApp
+                    Enquire about your date ↗
                 </button>
                 <button type="button" class="btn btn-outline-gold" onclick="openCallModal('Hero Voice Call Inquiry')">
-                    📞 Call Venue Desk
+                    Speak to our team
                 </button>
-                <a href="#offerings" class="btn btn-outline-gold">Explore All 5 Offerings ↓</a>
+                <a href="#offerings" class="btn btn-outline-gold">Discover our spaces ↓</a>
             </div>
-            <div class="hero-stats">
-                <div class="stat-card"><strong>1,500</strong><span>Open Ground Crowd</span></div>
-                <div class="stat-card"><strong>250</strong><span>AC Mini Hall Guests</span></div>
-                <div class="stat-card"><strong>Open to All</strong><span>Pool Booking Passes</span></div>
-                <div class="stat-card"><strong>24/7</strong><span>Luxury Stay & Decor</span></div>
-            </div>
+            <div class="hero-note"><span>CELEBRATE</span><span>UNWIND</span><span>STAY</span><span>KULUR, MANGALORE</span></div>
         </div>
     </section>
 
-    <!-- What We Offer Section -->
+    <!-- Our Spaces Section -->
     <section id="offerings" class="section-pad">
         <div class="container">
             <div class="section-header">
                 <span class="eyebrow">WHAT WE OFFER IN KULUR, MANGALORE</span>
-                <h2>Tailored Spaces for Grand Celebrations, Stays & Pool Leisure</h2>
-                <p>Select any offering below and click the <strong>WhatsApp icon</strong> or <strong>Call icon</strong> to connect with our reservation team.</p>
+                <h2>A setting for every occasion</h2>
+                <p>From celebrations to quiet escapes, explore our spaces and speak with our team about availability, packages and your plans.</p>
             </div>
 
             <div class="offerings-grid">
@@ -112,7 +115,7 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
                 ?>
                 <article class="offering-card" id="<?= htmlspecialchars($item['slug']) ?>">
                     <div class="offering-img-wrap">
-                        <img src="<?= htmlspecialchars($item['image_path']) ?>" alt="<?= htmlspecialchars($item['title'] . ' - ' . $item['seo_focus_keyword']) ?>" loading="lazy">
+                        <img src="<?= htmlspecialchars(publicImage($item['image_path'])) ?>" alt="<?= htmlspecialchars($item['title'] . ' at ' . $settings['site_name']) ?>" loading="lazy" decoding="async" width="800" height="600" onerror="this.onerror=null;this.src='assets/images/placeholder.svg'">
                         <span class="offering-badge"><?= htmlspecialchars($item['badge']) ?></span>
                         <span class="capacity-pill"><?= htmlspecialchars($item['capacity_label']) ?></span>
                     </div>
@@ -126,10 +129,10 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
                         </ul>
                         <div class="offering-footer" style="display:flex;gap:10px;">
                             <button type="button" class="btn btn-book-wa" style="flex:1;" onclick="openWhatsAppModal(<?= htmlspecialchars(json_encode($item['whatsapp_custom_msg'])) ?>, <?= htmlspecialchars(json_encode($item['title'])) ?>)">
-                                💬 Book Now on WhatsApp →
+                                Enquire about this space ↗
                             </button>
                             <button type="button" class="btn-circle-call" onclick="openCallModal(<?= htmlspecialchars(json_encode($item['title'])) ?>)" title="Call for <?= htmlspecialchars($item['title']) ?>" aria-label="Call for <?= htmlspecialchars($item['title']) ?>">
-                                📞
+                                
                             </button>
                         </div>
                     </div>
@@ -143,27 +146,20 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
     <section id="pool-spotlight" class="section-pad dark-emerald-bg">
         <div class="container spotlight-grid">
             <div>
-                <span class="eyebrow gold-text">PUBLIC & PRIVATE POOL BOOKING • KULUR MANGALORE</span>
-                <h2>Swimming Pool Open for Anyone & Best Resort Stay</h2>
-                <p>Looking for a refreshing <strong>pool for anyone in Mangalore</strong>? You don't need to book a full wedding hall to enjoy our tropical swimming pool! We welcome families, friend groups, fitness swimmers, and weekend day-out guests with flexible hourly passes and private pool party bookings.</p>
-                <div class="keyword-tags">
-                    <span>#BestStayMangalore</span>
-                    <span>#OpenGroundHall1500</span>
-                    <span>#PoolForAnyone</span>
-                    <span>#PoolBookingKulur</span>
-                    <span>#MiniHall250</span>
-                </div>
+                <span class="eyebrow gold-text">A LITTLE TIME TO UNWIND</span>
+                <h2><?= htmlspecialchars($settings['pool_heading']) ?></h2>
+                <p><?= htmlspecialchars($settings['pool_description']) ?></p>
                 <div style="margin-top:1.5rem;display:flex;gap:12px;flex-wrap:wrap;">
                     <button type="button" class="btn btn-gold" onclick="openWhatsAppModal('Hello Charles Gala Venue! I want to book a Swimming Pool slot / Stay package. Please share rates.', 'Swimming Pool Pass Booking')">
-                        🏊 Book Pool Pass on WhatsApp
+                        Enquire about pool access ↗
                     </button>
                     <button type="button" class="btn btn-outline-gold" onclick="openCallModal('Swimming Pool & Stay Desk')">
-                        📞 Call for Pool Slot
+                        Ask about timings
                     </button>
                 </div>
             </div>
             <div class="spotlight-image-box">
-                <img src="uploads/offerings/pool.jpg" alt="Swimming Pool for Anyone at Charles Gala Venue Mangalore" loading="lazy">
+                <img src="<?= htmlspecialchars($poolImage) ?>" alt="Swimming Pool for Anyone at Charles Gala Venue Mangalore" loading="lazy" decoding="async" width="800" height="600" onerror="this.onerror=null;this.src='assets/images/placeholder.svg'">
             </div>
         </div>
     </section>
@@ -172,7 +168,7 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
     <section id="about" class="section-pad">
         <div class="container about-grid">
             <div class="about-img-col">
-                <img src="<?= htmlspecialchars($about['image_path']) ?>" alt="<?= htmlspecialchars($about['headline']) ?>" loading="lazy">
+                <img src="<?= htmlspecialchars(publicImage($about['image_path'])) ?>" alt="<?= htmlspecialchars($about['headline']) ?>" loading="lazy" decoding="async" width="800" height="600" onerror="this.onerror=null;this.src='assets/images/placeholder.svg'">
             </div>
             <div class="about-text-col">
                 <span class="eyebrow">ABOUT CHARLES GALA VENUE</span>
@@ -183,7 +179,7 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
                 </div>
                 <div class="highlights-grid">
                     <?php foreach ($aboutHighlights as $hl): ?>
-                        <div class="highlight-chip">🌴 <?= htmlspecialchars($hl) ?></div>
+                        <div class="highlight-chip"><?= htmlspecialchars($hl) ?></div>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -195,8 +191,8 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
         <div class="container">
             <div class="section-header">
                 <span class="eyebrow">VISUAL SHOWCASE</span>
-                <h2>Photo & YouTube Video Gallery</h2>
-                <p>Explore real moments across our 1,500-capacity Open Ground Hall, 250-capacity Mini Hall, Swimming Pool, and Luxury Rooms.</p>
+                <h2>A glimpse of Charles Gala</h2>
+                <p>Discover our venue, celebration spaces, pool and rooms. Contact our team to arrange a visit.</p>
             </div>
             <div class="gallery-grid">
                 <?php foreach ($gallery as $g): ?>
@@ -206,19 +202,19 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
                         ?>
                             <div class="video-container">
                                 <iframe
-                                    src="https://www.youtube.com/embed/<?= htmlspecialchars($g['youtube_id']) ?>?autoplay=<?= $autoplayParam ?>&rel=0"
+                                    src="https://www.youtube-nocookie.com/embed/<?= htmlspecialchars($g['youtube_id']) ?>?autoplay=<?= $autoplayParam ?>&rel=0"
                                     title="<?= htmlspecialchars($g['title']) ?>"
                                     frameborder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowfullscreen
-                                    loading="lazy"></iframe>
+                                    loading="lazy" decoding="async" width="800" height="600" onerror="this.onerror=null;this.src='assets/images/placeholder.svg'"></iframe>
                             </div>
                         <?php else: ?>
-                            <img src="<?= htmlspecialchars($g['image_path']) ?>" alt="<?= htmlspecialchars($g['title']) ?>" loading="lazy">
+                            <img src="<?= htmlspecialchars(publicImage($g['image_path'])) ?>" alt="<?= htmlspecialchars($g['title']) ?>" loading="lazy" decoding="async" width="800" height="600" onerror="this.onerror=null;this.src='assets/images/placeholder.svg'">
                         <?php endif; ?>
                         <div class="gallery-caption">
                             <span class="gallery-cat"><?= htmlspecialchars($g['category']) ?> <?= $g['media_type'] === 'youtube' ? '• ▶ YouTube' : '' ?></span>
-                            <h4><?= htmlspecialchars($g['title']) ?></h4>
+                            <h3><?= htmlspecialchars($g['title']) ?></h3>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -226,24 +222,24 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
         </div>
     </section>
 
-    <!-- Map & Contact Section (No raw phone/WhatsApp number shown in text!) -->
+    <!-- Contact Section (No raw phone/WhatsApp number shown in text!) -->
     <section id="location" class="section-pad">
         <div class="container contact-grid">
             <div class="contact-card">
                 <span class="eyebrow">VISIT OR CONTACT US</span>
                 <h2>Book Your Date at Charles Gala Venue</h2>
                 <ul class="contact-details">
-                    <li><strong>📍 Address:</strong> <?= htmlspecialchars($settings['address']) ?></li>
-                    <li><strong>🧭 Google Plus Code:</strong> <?= htmlspecialchars($settings['plus_code']) ?></li>
-                    <li><strong>✉️ Official Email:</strong> <a href="mailto:<?= htmlspecialchars($settings['email']) ?>"><?= htmlspecialchars($settings['email']) ?></a></li>
+                    <li><strong>Address:</strong> <?= htmlspecialchars($settings['address']) ?></li>
+                    <li><strong>Google Plus Code:</strong> <?= htmlspecialchars($settings['plus_code']) ?></li>
+                    <li><strong>Official Email:</strong> <a href="mailto:<?= htmlspecialchars($settings['email']) ?>"><?= htmlspecialchars($settings['email']) ?></a></li>
                     <li>
-                        <strong>💬 Instant Booking & Voice Desk:</strong>
+                        <strong>Instant Booking & Voice Desk:</strong>
                         <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
                             <button type="button" class="btn btn-whatsapp-lg" onclick="openWhatsAppModal(<?= htmlspecialchars(json_encode($settings['whatsapp_default_msg'])) ?>, 'Contact Section Inquiry')">
-                                💬 Click for WhatsApp Message
+                                Click for WhatsApp Message
                             </button>
                             <button type="button" class="btn btn-gold" onclick="openCallModal('Contact Section Voice Call')">
-                                📞 Click to Call Venue
+                                Click to Call Venue
                             </button>
                         </div>
                     </li>
@@ -275,6 +271,7 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
         </div>
     </section>
 
+    </main>
     <!-- Footer -->
     <footer class="site-footer">
         <div class="container footer-inner">
@@ -282,7 +279,7 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
                 <strong><?= htmlspecialchars($settings['site_name']) ?></strong> — <?= htmlspecialchars($settings['address']) ?>
             </div>
             <div>
-                <a href="sitemap.php">XML Sitemap</a> • <a href="admin/login.php">🔒 Admin CMS Login</a>
+                © <?= date('Y') ?> <?= htmlspecialchars($settings['site_name']) ?><br>Designed and Developed by <a href="https://codeixe.com/" target="_blank" rel="noopener">CodeIXE AI Solutions</a>
             </div>
         </div>
     </footer>
@@ -299,18 +296,18 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
 
     <!-- Modal 1: Visible ONLY when clicking on the WhatsApp icon / Book Now -->
     <div id="wa-action-modal" class="action-modal-backdrop" style="display:none;">
-        <div class="action-modal-card">
+        <div class="action-modal-card" role="dialog" aria-modal="true" aria-label="Contact the venue" tabindex="-1">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                <strong style="font-size:1.15rem;color:#061a14;">💬 Send WhatsApp Booking Message</strong>
+                <strong style="font-size:1.15rem;color:#061a14;">Send WhatsApp Booking Message</strong>
                 <button type="button" onclick="closeActionModals()" style="background:none;border:none;font-size:1.25rem;cursor:pointer;">✕</button>
             </div>
             <p id="wa-modal-context" style="font-size:0.85rem;color:#475569;margin-bottom:8px;"></p>
-            <label style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:#334155;">Your Pre-Filled WhatsApp Message:</label>
+            <label for="wa-modal-msg" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:#334155;">Your Pre-Filled WhatsApp Message:</label>
             <textarea id="wa-modal-msg" rows="3" style="width:100%;padding:10px;border-radius:10px;border:1px solid #cbd5e1;margin:8px 0 14px;font-family:inherit;"></textarea>
             <div style="display:flex;gap:10px;justify-content:flex-end;">
                 <button type="button" class="btn" onclick="closeActionModals()" style="background:#e2e8f0;color:#1e293b;">Cancel</button>
                 <a id="wa-modal-launch" href="#" target="_blank" rel="noopener" class="btn btn-whatsapp-lg" onclick="closeActionModals()">
-                    💬 Open WhatsApp & Send Message ↗
+                    Open WhatsApp & Send Message ↗
                 </a>
             </div>
         </div>
@@ -318,9 +315,9 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
 
     <!-- Modal 2: Visible ONLY when clicking on the Call icon -->
     <div id="call-action-modal" class="action-modal-backdrop" style="display:none;">
-        <div class="action-modal-card">
+        <div class="action-modal-card" role="dialog" aria-modal="true" aria-label="Contact the venue" tabindex="-1">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                <strong style="font-size:1.15rem;color:#061a14;">📞 Call Charles Gala Venue</strong>
+                <strong style="font-size:1.15rem;color:#061a14;">Call Charles Gala Venue</strong>
                 <button type="button" onclick="closeActionModals()" style="background:none;border:none;font-size:1.25rem;cursor:pointer;">✕</button>
             </div>
             <p id="call-modal-context" style="font-size:0.9rem;color:#334155;margin-bottom:14px;"></p>
@@ -330,14 +327,14 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
             </div>
             <div style="display:flex;gap:10px;justify-content:flex-end;">
                 <button type="button" class="btn" onclick="closeActionModals()" style="background:#e2e8f0;color:#1e293b;">Close</button>
-                <a id="call-modal-dial" href="#" class="btn btn-gold">📞 Dial Now</a>
+                <a id="call-modal-dial" href="#" class="btn btn-gold">Dial Now</a>
             </div>
         </div>
     </div>
 
     <script>
-    const _WA_ENDPOINT = <?= json_encode(preg_replace('/[^0-9]/', '', $settings['whatsapp_number'])) ?>;
-    const _CALL_NUM = <?= json_encode($settings['phone_primary']) ?>;
+    const _WA_ENDPOINT = <?= json_encode(preg_replace('/[^0-9]/', '', $settings['whatsapp_number']), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    const _CALL_NUM = <?= json_encode($settings['phone_primary'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
     function openWhatsAppModal(defaultMsg, contextLabel) {
         const modal = document.getElementById('wa-action-modal');
@@ -351,22 +348,58 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
         };
         msgBox.oninput = updateHref;
         updateHref();
-        modal.style.display = 'flex';
+        showContactDialog(modal);
     }
 
     function openCallModal(contextLabel) {
         const modal = document.getElementById('call-action-modal');
         document.getElementById('call-modal-context').textContent = 'Connecting you with Charles Gala Venue (' + (contextLabel || 'Booking Desk') + ')';
-        const formatted = '+91 ' + _CALL_NUM.replace(/^91/, '');
+        const digits = _CALL_NUM.replace(/[^0-9]/g, '');
+        const dialNumber = '+' + (digits.length === 10 ? '91' + digits : digits);
+        const formatted = dialNumber;
         document.getElementById('call-modal-number').textContent = formatted;
-        document.getElementById('call-modal-dial').href = 'tel:+91' + _CALL_NUM.replace(/^91/, '');
-        modal.style.display = 'flex';
+        document.getElementById('call-modal-dial').href = 'tel:' + dialNumber;
+        showContactDialog(modal);
     }
 
+    let previousFocus;
+    function showContactDialog(modal) {
+        previousFocus = document.activeElement;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        modal.querySelector('.action-modal-card').focus();
+    }
     function closeActionModals() {
+        document.body.style.overflow = '';
+        if (previousFocus) previousFocus.focus();
         document.getElementById('wa-action-modal').style.display = 'none';
         document.getElementById('call-action-modal').style.display = 'none';
     }
+    const toggle = document.querySelector('.menu-toggle');
+    const navigation = document.querySelector('.main-nav');
+    toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') !== 'true';
+        toggle.setAttribute('aria-expanded', String(expanded));
+        navigation.classList.toggle('is-open', expanded);
+    });
+    navigation.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
+        toggle.setAttribute('aria-expanded', 'false'); navigation.classList.remove('is-open');
+    }));
+    document.querySelectorAll('.action-modal-backdrop').forEach(modal => modal.addEventListener('click', event => {
+        if (event.target === modal) closeActionModals();
+    }));
+    document.addEventListener('keydown', event => {
+        const modal = [...document.querySelectorAll('.action-modal-backdrop')].find(el => el.style.display === 'flex');
+        if (!modal) return;
+        if (event.key === 'Escape') closeActionModals();
+        if (event.key === 'Tab') {
+            const focusable = [...modal.querySelectorAll('button, a[href], textarea')];
+            const first = focusable[0], last = focusable[focusable.length - 1];
+            if (event.shiftKey && (document.activeElement === first || document.activeElement === modal.querySelector('.action-modal-card'))) { event.preventDefault(); last.focus(); }
+            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        }
+    });
     </script>
 </body>
 </html>
+
