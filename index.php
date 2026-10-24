@@ -29,7 +29,7 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/public.css?v=2">
+    <link rel="stylesheet" href="assets/css/public.css?v=3">
 </head>
 <body class="public-site">
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -332,6 +332,8 @@ $aboutHighlights = json_decode($about['highlights_json'] ?? '[]', true) ?: [];
         </div>
     </div>
 
+    <dialog id="photo-viewer"><button type="button" class="photo-close" aria-label="Close photograph">Close ×</button><img alt=""><p></p></dialog>
+    <script src="assets/js/immersive.js" defer></script>
     <script>
     const _WA_ENDPOINT = <?= json_encode(preg_replace('/[^0-9]/', '', $settings['whatsapp_number']), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     const _CALL_NUM = <?= json_encode($settings['phone_primary'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
