@@ -1,0 +1,92 @@
+/* Charles Gala Venue - Production Stylesheet */
+:root {
+    --emerald-deep: #061A14;
+    --emerald-mid: #0C2D23;
+    --gold-primary: #D4AF37;
+    --gold-light: #F3E5AB;
+    --cream-bg: #FAF8F3;
+    --whatsapp-green: #25D366;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--cream-bg); color: #0f172a; line-height: 1.6; }
+h1, h2, h3, .brand-title { font-family: 'Cormorant Garamond', Georgia, serif; }
+.container { max-width: 1240px; margin: 0 auto; padding: 0 1.25rem; }
+.top-bar { background: #04120E; color: #e2e8f0; font-size: 0.8rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(212,175,55,0.25); }
+.top-bar-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+.top-bar-links { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+.top-bar a { color: var(--gold-light); text-decoration: none; }
+.icon-trigger-btn { background: rgba(255,255,255,0.08); color: var(--gold-light); border: 1px solid rgba(212,175,55,0.35); border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+.icon-trigger-btn.wa-trigger { background: rgba(37,211,102,0.18); color: #86efac; border-color: rgba(37,211,102,0.4); }
+.site-header { background: rgba(7,25,20,0.96); color: #fff; position: sticky; top: 0; z-index: 100; padding: 0.85rem 0; border-bottom: 1px solid rgba(212,175,55,0.25); }
+.nav-container { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.brand-logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: #fff; }
+.brand-logo img { border-radius: 12px; background: #fff; padding: 3px; }
+.brand-title { font-size: 1.5rem; font-weight: 700; color: var(--gold-primary); display: block; line-height: 1.1; }
+.brand-sub { font-size: 0.65rem; letter-spacing: 0.18em; color: #a7f3d0; }
+.main-nav { display: flex; gap: 1.5rem; }
+.main-nav a { color: #e2e8f0; text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.65rem 1.35rem; border-radius: 999px; font-weight: 700; font-size: 0.875rem; text-decoration: none; cursor: pointer; border: none; transition: 0.2s; }
+.btn-gold { background: linear-gradient(135deg, #D4AF37, #F3E5AB, #C59B27); color: #04120E; }
+.btn-whatsapp-lg { background: var(--whatsapp-green); color: #fff; }
+.btn-outline-gold { border: 1px solid var(--gold-primary); color: var(--gold-light); background: transparent; }
+.btn-circle-call { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(212,175,55,0.5); background: #0c2d23; color: var(--gold-light); cursor: pointer; font-size: 1.05rem; display: inline-flex; align-items: center; justify-content: center; }
+.hero-section { background-size: cover; background-position: center; color: #fff; padding: 5rem 0; }
+.hero-pill { display: inline-block; background: rgba(212,175,55,0.18); border: 1px solid rgba(212,175,55,0.45); color: var(--gold-light); padding: 0.35rem 0.9rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem; }
+.hero-content h1 { font-size: 3.2rem; line-height: 1.12; margin-bottom: 1rem; }
+.gold-text { color: var(--gold-primary); }
+.hero-lead { max-width: 720px; font-size: 1.1rem; color: #e2e8f0; margin-bottom: 1.75rem; }
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+.hero-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; }
+.stat-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(212,175,55,0.3); padding: 1rem; border-radius: 16px; }
+.stat-card strong { display: block; font-size: 1.6rem; color: var(--gold-primary); }
+.stat-card span { font-size: 0.8rem; color: #cbd5e1; }
+.section-pad { padding: 4.5rem 0; }
+.section-header { margin-bottom: 2.5rem; }
+.eyebrow { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #b45309; display: block; margin-bottom: 0.35rem; }
+.offerings-grid, .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 1.75rem; }
+.offering-card, .gallery-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between; }
+.offering-img-wrap { position: relative; height: 220px; background: #0f172a; }
+.offering-img-wrap img, .gallery-card img { width: 100%; height: 100%; object-fit: cover; }
+.offering-badge { position: absolute; top: 12px; left: 12px; background: rgba(6,26,20,0.9); color: var(--gold-primary); padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+.capacity-pill { position: absolute; bottom: 12px; right: 12px; background: rgba(15,23,42,0.9); color: #fff; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+.offering-body { padding: 1.5rem; }
+.feature-list { list-style: none; margin: 1rem 0; font-size: 0.85rem; color: #334155; }
+.btn-book-wa { background: var(--emerald-deep); color: var(--gold-primary); width: 100%; }
+.btn-book-wa:hover { background: var(--whatsapp-green); color: #fff; }
+.dark-emerald-bg { background: linear-gradient(135deg, #061A14, #123E31); color: #fff; }
+.spotlight-grid, .about-grid, .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem; align-items: center; }
+.spotlight-image-box img, .about-img-col img { width: 100%; border-radius: 20px; object-fit: cover; max-height: 380px; }
+.keyword-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+.keyword-tags span { background: rgba(255,255,255,0.1); padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; color: var(--gold-light); }
+.highlights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+.highlight-chip { background: #fff; border: 1px solid #e2e8f0; padding: 0.6rem 0.9rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; }
+.bg-cream { background: #F3EFE6; }
+.video-container { position: relative; height: 220px; background: #000; }
+.video-container iframe { width: 100%; height: 100%; }
+.gallery-caption { padding: 1rem; }
+.contact-card { background: var(--emerald-deep); color: #fff; padding: 2.25rem; border-radius: 24px; }
+.contact-details { list-style: none; space-y: 0.75rem; margin: 1.25rem 0; }
+.contact-details li { margin-bottom: 0.85rem; }
+.contact-details a { color: var(--gold-primary); }
+.social-links-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1.25rem; }
+.social-btn { background: rgba(255,255,255,0.12); color: #fff; padding: 0.45rem 0.95rem; border-radius: 999px; text-decoration: none; font-size: 0.8rem; }
+.site-footer { background: #04120E; color: #94a3b8; padding: 2rem 0; font-size: 0.85rem; }
+.footer-inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.footer-inner a { color: var(--gold-primary); text-decoration: none; }
+.floating-action-stack { position: fixed; bottom: 22px; right: 22px; z-index: 999; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.floating-whatsapp { width: 58px; height: 58px; border-radius: 50%; background: var(--whatsapp-green); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(37,211,102,0.45); }
+.floating-call-btn { width: 50px; height: 50px; border-radius: 50%; background: var(--emerald-deep); color: var(--gold-primary); border: 2px solid var(--gold-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+.action-modal-backdrop { position: fixed; inset: 0; background: rgba(4,18,14,0.75); backdrop-filter: blur(4px); z-index: 2000; align-items: center; justify-content: center; padding: 1rem; }
+.action-modal-card { background: #fff; color: #0f172a; max-width: 460px; width: 100%; border-radius: 20px; padding: 1.5rem; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+/* Admin styles */
+.admin-login-body { background: var(--emerald-deep); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+.login-box { background: #fff; padding: 2.25rem; border-radius: 20px; max-width: 420px; width: 100%; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.35); }
+.login-box label, .admin-card label { display: block; text-align: left; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: #334155; margin-top: 0.85rem; margin-bottom: 0.25rem; }
+.login-box input, .admin-card input, .admin-card textarea, .admin-card select { width: 100%; padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 0.9rem; }
+.admin-header { background: var(--emerald-deep); color: #fff; padding: 1rem 0; }
+.admin-header-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.admin-card { background: #fff; border-radius: 20px; padding: 1.75rem; margin-bottom: 1.75rem; border: 1px solid #e2e8f0; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+.offering-admin-row { border-top: 1px solid #e2e8f0; padding-top: 1.25rem; margin-top: 1.25rem; }
+.alert-success { background: #dcfce7; color: #14532d; padding: 0.85rem 1rem; border-radius: 10px; margin-bottom: 1rem; font-weight: 600; }
+.alert-error { background: #fee2e2; color: #7f1d1d; padding: 0.85rem 1rem; border-radius: 10px; margin-bottom: 1rem; font-weight: 600; }
