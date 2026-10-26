@@ -28,6 +28,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($action === 'save_homepage') {
+            $videoUrl = trim((string)($_POST['hero_video_url'] ?? ''));
+            if ($videoUrl !== '' && backgroundYoutubeId($videoUrl) === '') {
+                $errorMsg = 'Enter a valid YouTube video URL, or leave it blank to use the background image.';
+            } else {
             foreach (homepageDefaults() as $key => $default) {
                 if ($key !== 'hero_image_path') updateSiteSetting($key, trim((string)($_POST[$key] ?? $default)));
             }
@@ -35,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($image) updateSiteSetting('hero_image_path', $image);
             if (isset($_POST['reset_hero'])) updateSiteSetting('hero_image_path', 'assets/images/placeholder.svg');
             $flash = 'Homepage content and background saved.';
+            }
         }
 
         // B. Update SEO Keywords & Gemini API Key in MySQL
@@ -193,10 +198,13 @@ $gallery   = getGalleryItems();
             <form method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                 <input type="hidden" name="action" value="save_homepage">
-                <?php foreach (homepageDefaults() as $key => $default): if ($key === 'hero_image_path') continue; ?>
+                <?php foreach (homepageDefaults() as $key => $default): if (in_array($key, ['hero_image_path', 'hero_video_url'], true)) continue; ?>
                     <label for="<?= $key ?>"><?= htmlspecialchars(ucwords(str_replace('_', ' ', $key))) ?></label>
                     <textarea id="<?= $key ?>" name="<?= $key ?>" rows="2" required><?= htmlspecialchars($settings[$key]) ?></textarea>
                 <?php endforeach; ?>
+                <label for="hero_video_url">Background video (YouTube URL)</label>
+                <input type="url" id="hero_video_url" name="hero_video_url" value="<?= htmlspecialchars($settings['hero_video_url']) ?>" placeholder="https://www.youtube.com/watch?v=...">
+                <p>Plays muted and loops. Leave blank to show only the background image. The image is also used when playback is unavailable.</p>
                 <label for="hero_image">Homepage background image (JPEG, PNG or WebP; landscape recommended)</label>
                 <input id="hero_image" type="file" name="hero_image" accept="image/jpeg,image/png,image/webp">
                 <label><input type="checkbox" name="reset_hero" value="1" style="width:auto"> Use the neutral background placeholder</label>
@@ -451,4 +459,5 @@ $gallery   = getGalleryItems();
     </script>
 </body>
 </html>
+
 
