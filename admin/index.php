@@ -40,7 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($image) updateSiteSetting('hero_image_path', $image);
             if (isset($_POST['reset_hero'])) updateSiteSetting('hero_image_path', 'assets/images/placeholder.svg');
             $flash = 'Homepage content and background saved.';
-            }
         }
 
         // C. Update About Us Image & Details in MySQL
