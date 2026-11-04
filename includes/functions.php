@@ -149,6 +149,7 @@ function homepageDefaults(): array {
         'hero_eyebrow' => 'Celebrations, stays & swimming in Kulur, Mangalore',
         'hero_heading' => 'Some places bring you closer.',
         'hero_description' => 'Bring your people together at Charles Gala Venue. Explore our event spaces, enjoy time by the swimming pool, or plan a comfortable stay in Kulur, Mangalore.',
+        'hero_video_url' => 'https://www.youtube.com/watch?v=zVg8op029Mg',
         'hero_image_path' => 'assets/images/resort/lawn.jpg',
         'pool_heading' => 'Your next poolside escape',
         'pool_description' => 'Make time for a refreshing swim with family and friends at Charles Gala Venue in Kulur, Mangalore. Ask our team about current pool timings, entry rates and private bookings before your visit.',

@@ -2,6 +2,7 @@
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/seo.php';
 $settings = getSiteSettings() + homepageDefaults();
+$heroVideoId = backgroundYoutubeId($settings['hero_video_url']);
 $about = getAboutSection();
 $offerings = getOfferings(true);
 $gallery = getGalleryItems();
@@ -45,3 +46,4 @@ $videoId = backgroundYoutubeId($settings['hero_video_url'] ?? 'https://www.youtu
 </main><footer><div class="wrap"><a class="brand" href="#home"><?= esc($settings['site_name']) ?></a><nav aria-label="Social links"><?php foreach (['instagram_url'=>'Instagram','facebook_url'=>'Facebook','youtube_url'=>'YouTube'] as $key=>$label): if (!empty($settings[$key])): ?><a href="<?= esc(webLink($settings[$key])) ?>" target="_blank" rel="noopener"><?= $label ?> ↗</a><?php endif; endforeach; ?></nav></div><div class="wrap credits"><span>© <?= date('Y') ?> <?= esc($settings['site_name']) ?></span><span>Designed and Developed by <a href="https://codeixe.com/">CodeIXE AI Solutions</a></span></div></footer>
 <dialog id="viewer"><button type="button" aria-label="Close photograph">Close ×</button><img alt=""><p></p></dialog>
 </body></html>
+

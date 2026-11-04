@@ -40,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($image) updateSiteSetting('hero_image_path', $image);
             if (isset($_POST['reset_hero'])) updateSiteSetting('hero_image_path', 'assets/images/placeholder.svg');
             $flash = 'Homepage content and background saved.';
+            }
         }
 
         // C. Update About Us Image & Details in MySQL
@@ -187,7 +188,7 @@ $gallery   = getGalleryItems();
             <form method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                 <input type="hidden" name="action" value="save_homepage">
-                <?php foreach (homepageDefaults() as $key => $default): if ($key === 'hero_image_path') continue; ?>
+                <?php foreach (homepageDefaults() as $key => $default): if (in_array($key, ['hero_image_path', 'hero_video_url'], true)) continue; ?>
                     <label for="<?= $key ?>"><?= htmlspecialchars(ucwords(str_replace('_', ' ', $key))) ?></label>
                     <textarea id="<?= $key ?>" name="<?= $key ?>" rows="2" required><?= htmlspecialchars($settings[$key]) ?></textarea>
                 <?php endforeach; ?>
