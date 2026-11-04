@@ -1,0 +1,7 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+</IfModule>
+<FilesMatch "^(database\.sql|db_credentials\.php)$">
+Require all denied
+</FilesMatch>

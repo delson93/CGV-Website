@@ -168,17 +168,19 @@ function publicImage(?string $path): string {
 }
 
 
-/** Only accepted YouTube hosts and exact video identifiers become embed URLs. */
-function backgroundYoutubeId(string $url): string {
-    $parts = parse_url(trim($url));
-    if (!$parts || !in_array(strtolower($parts['scheme'] ?? ''), ['http', 'https'], true)) return '';
-    $host = strtolower($parts['host'] ?? '');
-    $path = $parts['path'] ?? '';
+/** Accept only a YouTube video URL or an exact video ID. Blank disables video. */
+function backgroundYoutubeId(string $value): string {
+    $value = trim($value);
+    if (preg_match('/^[\w-]{11}$/D', $value)) return $value;
+    $url = parse_url($value);
+    if (!$url || !in_array($url['scheme'] ?? '', ['https', 'http'], true)) return '';
+    $host = strtolower($url['host'] ?? '');
     $id = '';
-    if ($host === 'youtu.be') $id = trim($path, '/');
-    elseif (in_array($host, ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtube-nocookie.com', 'www.youtube-nocookie.com'], true)) {
-        if ($path === '/watch') { parse_str($parts['query'] ?? '', $query); $id = $query['v'] ?? ''; }
-        elseif (preg_match('~^/(?:embed|shorts)/([a-zA-Z0-9_-]{11})/?$~D', $path, $match)) $id = $match[1];
+    if ($host === 'youtu.be') $id = trim($url['path'] ?? '', '/');
+    if (in_array($host, ['youtube.com','www.youtube.com','m.youtube.com','www.youtube-nocookie.com'], true)) {
+        parse_str($url['query'] ?? '', $query);
+        $id = is_string($query['v'] ?? null) ? $query['v'] : '';
+        if (!$id && preg_match('~^/(?:embed|shorts)/([\w-]{11})/?$~D', $url['path'] ?? '', $m)) $id = $m[1];
     }
-    return is_string($id) && preg_match('/^[a-zA-Z0-9_-]{11}$/D', $id) ? $id : '';
+    return preg_match('/^[\w-]{11}$/D', $id) ? $id : '';
 }

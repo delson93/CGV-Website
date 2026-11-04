@@ -4,6 +4,8 @@
  */
 require_once __DIR__ . '/../includes/functions.php';
 requireAdminAuth();
+header('X-Robots-Tag: noindex, nofollow');
+header('Cache-Control: no-store');
 
 $pdo = getDB();
 $flash = '';
@@ -24,14 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     updateSiteSetting($k, trim($_POST[$k]));
                 }
             }
-            $flash = 'WhatsApp backend contact, Call number, and Social Media links saved to MySQL!';
+            $flash = 'Contact details and social links saved.';
         }
 
-        if ($action === 'save_homepage') {
-            $videoUrl = trim((string)($_POST['hero_video_url'] ?? ''));
-            if ($videoUrl !== '' && backgroundYoutubeId($videoUrl) === '') {
-                $errorMsg = 'Enter a valid YouTube video URL, or leave it blank to use the background image.';
-            } else {
+        if ($action === 'save_homepage' && trim($_POST['hero_video_url'] ?? '') !== '' && backgroundYoutubeId((string)$_POST['hero_video_url']) === '') {
+            $errorMsg = 'Enter a valid YouTube video URL, or leave the field blank for a photo background.';
+        } elseif ($action === 'save_homepage') {
+            updateSiteSetting('hero_video_url', trim((string)($_POST['hero_video_url'] ?? '')));
             foreach (homepageDefaults() as $key => $default) {
                 if ($key !== 'hero_image_path') updateSiteSetting($key, trim((string)($_POST[$key] ?? $default)));
             }
@@ -40,17 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($_POST['reset_hero'])) updateSiteSetting('hero_image_path', 'assets/images/placeholder.svg');
             $flash = 'Homepage content and background saved.';
             }
-        }
-
-        // B. Update SEO Keywords & Gemini API Key in MySQL
-        if ($action === 'save_seo') {
-            $seoKeys = ['seo_meta_title', 'seo_meta_description', 'seo_keywords', 'seo_canonical_url', 'gemini_api_key', 'gemini_model'];
-            foreach ($seoKeys as $k) {
-                if (isset($_POST[$k])) {
-                    updateSiteSetting($k, trim($_POST[$k]));
-                }
-            }
-            $flash = 'SEO Meta Tags, Target Keywords, and Gemini AI configuration saved to MySQL!';
         }
 
         // C. Update About Us Image & Details in MySQL
@@ -64,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':c' => $_POST['content_html'] ?? '',
                 ':i' => $imgPath
             ]);
-            $flash = 'About Us section and photo updated in MySQL!';
+            $flash = 'About section and photo updated.';
         }
 
         // D. Update or Add Offering Photo & Details in MySQL
@@ -84,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':img' => $imgPath,
                     ':id'  => $id
                 ]);
-                $flash = 'Offering updated in MySQL!';
+                $flash = 'Offering updated.';
             } else {
                 $slug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', trim($_POST['title']))) . '-' . time();
                 $stmt = $pdo->prepare("INSERT INTO offerings (slug, category, title, badge, capacity_label, short_desc, features_json, seo_focus_keyword, whatsapp_custom_msg, image_path, sort_order) VALUES (:slug, :cat, :t, :b, :cap, :d, :f, :kw, :wa, :img, 10)");
@@ -100,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':wa'   => $_POST['whatsapp_custom_msg'],
                     ':img'  => $imgPath
                 ]);
-                $flash = 'New Offering inserted into MySQL `offerings` table!';
+                $flash = 'New offering saved.';
             }
         }
 
@@ -125,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':yi' => $ytId,
                 ':ap' => $autoplay
             ]);
-            $flash = 'New Gallery item inserted into MySQL `gallery_items` table!';
+            $flash = 'Gallery item saved.';
         }
 
         // F. Change Admin Username & Password in MySQL `admins` Table
@@ -147,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->prepare("UPDATE admins SET username = :u, password_hash = :h WHERE id = :id")
                     ->execute([':u' => $newUser, ':h' => $newHash, ':id' => (int)$adminRow['id']]);
                 $_SESSION['cgv_admin_user'] = $newUser;
-                $flash = 'Admin username & bcrypt password hash updated in MySQL `admins` table!';
+                $flash = 'Administrator credentials updated.';
             }
         }
     }
@@ -164,7 +154,7 @@ $gallery   = getGalleryItems();
     <meta charset="UTF-8">
     <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MySQL Admin CMS — <?= htmlspecialchars($settings['site_name']) ?></title>
+    <title>Content manager | <?= htmlspecialchars($settings['site_name']) ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="admin-body">
@@ -173,8 +163,8 @@ $gallery   = getGalleryItems();
             <div style="display:flex;align-items:center;gap:12px;">
                 <img src="../assets/images/logo.png" alt="Logo" width="44" height="44">
                 <div>
-                    <strong>Charles Gala Venue — Production MySQL Admin CMS</strong>
-                    <div style="font-size:0.8rem;opacity:0.8;">Connected to MySQL (`<?= htmlspecialchars(DB_NAME) ?>`) • Logged in as `<?= htmlspecialchars($_SESSION['cgv_admin_user'] ?? 'admin') ?>`</div>
+                    <strong>Charles Gala Venue | Content manager</strong>
+                    <div style="font-size:0.8rem;opacity:0.8;">Signed in as <?= htmlspecialchars($_SESSION['cgv_admin_user'] ?? 'admin') ?></div>
                 </div>
             </div>
             <div style="display:flex;gap:12px;align-items:center;">
@@ -194,7 +184,7 @@ $gallery   = getGalleryItems();
 
         <section class="admin-card">
             <h2>Homepage design & background</h2>
-            <p>Upload your own venue photograph for the hero background. Until then, a neutral placeholder is displayed. Offering, gallery and About images remain editable in their sections below.</p>
+            <p>Upload your own venue photograph for the hero background. The existing venue photograph is used until replaced. Offering, gallery and About images remain editable in their sections below.</p>
             <form method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                 <input type="hidden" name="action" value="save_homepage">
@@ -202,9 +192,9 @@ $gallery   = getGalleryItems();
                     <label for="<?= $key ?>"><?= htmlspecialchars(ucwords(str_replace('_', ' ', $key))) ?></label>
                     <textarea id="<?= $key ?>" name="<?= $key ?>" rows="2" required><?= htmlspecialchars($settings[$key]) ?></textarea>
                 <?php endforeach; ?>
-                <label for="hero_video_url">Background video (YouTube URL)</label>
-                <input type="url" id="hero_video_url" name="hero_video_url" value="<?= htmlspecialchars($settings['hero_video_url']) ?>" placeholder="https://www.youtube.com/watch?v=...">
-                <p>Plays muted and loops. Leave blank to show only the background image. The image is also used when playback is unavailable.</p>
+                <label for="hero_video_url">YouTube background video URL</label>
+                <input id="hero_video_url" type="url" name="hero_video_url" value="<?= htmlspecialchars($settings['hero_video_url'] ?? 'https://www.youtube.com/watch?v=zVg8op029Mg') ?>">
+                <p>The video plays muted. Leave blank to use only the background photograph. The photograph also appears when video playback is unavailable or reduced motion is enabled.</p>
                 <label for="hero_image">Homepage background image (JPEG, PNG or WebP; landscape recommended)</label>
                 <input id="hero_image" type="file" name="hero_image" accept="image/jpeg,image/png,image/webp">
                 <label><input type="checkbox" name="reset_hero" value="1" style="width:auto"> Use the neutral background placeholder</label>
@@ -212,50 +202,11 @@ $gallery   = getGalleryItems();
             </form>
         </section>
 
-        <!-- 1. Gemini AI SEO Checker & Auto-Fixer -->
-        <section class="admin-card">
-            <h2>✨ Gemini AI SEO Audit & Auto-Fixer + Keyword Manager</h2>
-            <p>Boost organic rankings for <strong>best stay</strong>, <strong>open ground hall</strong>, <strong>pool for anyone</strong>, <strong>pool booking</strong>, and local Mangalore searches.</p>
-            <form method="POST">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
-                <input type="hidden" name="action" value="save_seo">
-                <div class="form-grid">
-                    <div>
-                        <label>SEO Meta Title</label>
-                        <input type="text" name="seo_meta_title" id="seo_meta_title" value="<?= htmlspecialchars($settings['seo_meta_title']) ?>" required>
-                    </div>
-                    <div>
-                        <label>Canonical URL</label>
-                        <input type="url" name="seo_canonical_url" value="<?= htmlspecialchars($settings['seo_canonical_url']) ?>" required>
-                    </div>
-                </div>
-                <label>SEO Meta Description (Phone number hidden per privacy setting)</label>
-                <textarea name="seo_meta_description" id="seo_meta_description" rows="3" required><?= htmlspecialchars($settings['seo_meta_description']) ?></textarea>
-
-                <label>Target Organic SEO Keywords (Comma-separated)</label>
-                <textarea name="seo_keywords" id="seo_keywords" rows="2" required><?= htmlspecialchars($settings['seo_keywords']) ?></textarea>
-
-                <div class="form-grid">
-                    <div>
-                        <label>Gemini API Key (for automated live SEO checking & fixing)</label>
-                        <input type="password" name="gemini_api_key" id="gemini_api_key" value="<?= htmlspecialchars($settings['gemini_api_key']) ?>" placeholder="AIzaSy...">
-                    </div>
-                    <div>
-                        <label>Gemini Model</label>
-                        <input type="text" name="gemini_model" value="<?= htmlspecialchars($settings['gemini_model'] ?: 'gemini-2.5-flash') ?>">
-                    </div>
-                </div>
-                <div style="display:flex;gap:12px;margin-top:1rem;flex-wrap:wrap;">
-                    <button type="submit" class="btn btn-gold">Save SEO & Keywords to MySQL</button>
-                    <button type="button" onclick="runGeminiSeoAudit()" class="btn btn-whatsapp-lg">🤖 Run Gemini AI Check & Auto-Fix SEO</button>
-                </div>
-                <div id="gemini-seo-result" style="margin-top:1rem;"></div>
-            </form>
-        </section>
+        <section class="admin-card"><h2>SEO & AI discovery</h2><p>Edit metadata, target keywords and visitor questions. Review saved scores, compare reports and request optional Gemini insights.</p><a class="btn btn-gold" href="seo.php">Open SEO dashboard</a></section>
 
         <!-- 2. Offerings Management -->
         <section class="admin-card">
-            <h2>🏛️ Manage Offerings & Upload Offering Photos (MySQL `offerings` Table)</h2>
+            <h2>Spaces and experiences</h2>
             <?php foreach ($offerings as $off): ?>
                 <form method="POST" enctype="multipart/form-data" class="offering-admin-row">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
@@ -292,14 +243,14 @@ $gallery   = getGalleryItems();
                             <input type="text" name="whatsapp_custom_msg" value="<?= htmlspecialchars($off['whatsapp_custom_msg']) ?>">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-gold" style="margin-top:0.75rem;">Save <?= htmlspecialchars($off['title']) ?> to MySQL</button>
+                    <button type="submit" class="btn btn-gold" style="margin-top:0.75rem;">Save <?= htmlspecialchars($off['title']) ?></button>
                 </form>
             <?php endforeach; ?>
         </section>
 
         <!-- 3. Gallery Management -->
         <section class="admin-card">
-            <h2>🎬 Gallery Management (MySQL `gallery_items` Table)</h2>
+            <h2>Gallery</h2>
             <form method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                 <input type="hidden" name="action" value="add_gallery">
@@ -334,13 +285,13 @@ $gallery   = getGalleryItems();
                         <label for="ap_new" style="margin:0;">Enable YouTube Autoplay (Muted inline)</label>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-gold" style="margin-top:1rem;">+ Insert into MySQL Gallery</button>
+                <button type="submit" class="btn btn-gold" style="margin-top:1rem;">Add to gallery</button>
             </form>
         </section>
 
         <!-- 4. About Us Section Management -->
         <section class="admin-card">
-            <h2>🌴 About Us Section (MySQL `about_section` Table)</h2>
+            <h2>About the venue</h2>
             <form method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                 <input type="hidden" name="action" value="save_about">
@@ -359,24 +310,24 @@ $gallery   = getGalleryItems();
                 <input type="text" name="subheadline" value="<?= htmlspecialchars($about['subheadline']) ?>">
                 <label>About Details (HTML supported)</label>
                 <textarea name="content_html" rows="4"><?= htmlspecialchars($about['content_html']) ?></textarea>
-                <button type="submit" class="btn btn-gold" style="margin-top:1rem;">Save About Us to MySQL</button>
+                <button type="submit" class="btn btn-gold" style="margin-top:1rem;">Save About Us</button>
             </form>
         </section>
 
         <!-- 5. Backend WhatsApp, Call & Social Media Management -->
         <section class="admin-card">
-            <h2>💬 Backend WhatsApp, Call & Social Media Links (MySQL `site_settings` Table)</h2>
+            <h2>Contact details and social links</h2>
             <p style="font-size:0.85rem;color:#64748b;margin-bottom:1rem;">Note: The Call & WhatsApp numbers configured below are kept hidden from public website text and are triggered only when a visitor clicks the Call icon or WhatsApp icon.</p>
             <form method="POST">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                 <input type="hidden" name="action" value="save_settings">
                 <div class="form-grid">
                     <div>
-                        <label>Backend Call Number (Triggered on Call Icon Click)</label>
+                        <label>Backend Telephone number</label>
                         <input type="text" name="phone_primary" value="<?= htmlspecialchars($settings['phone_primary']) ?>">
                     </div>
                     <div>
-                        <label>Backend WhatsApp Number (Triggered on WhatsApp Icon Click)</label>
+                        <label>WhatsApp number</label>
                         <input type="text" name="whatsapp_number" value="<?= htmlspecialchars($settings['whatsapp_number']) ?>">
                     </div>
                     <div>
@@ -401,15 +352,15 @@ $gallery   = getGalleryItems();
                     <div><label for="<?= $key ?>"><?= $label ?></label><input id="<?= $key ?>" name="<?= $key ?>" type="text" value="<?= htmlspecialchars($settings[$key] ?? '') ?>"></div>
                     <?php endforeach; ?>
                 </div>
-                <label>Default Floating WhatsApp Greeting Message</label>
+                <label>Default WhatsApp enquiry message</label>
                 <input type="text" name="whatsapp_default_msg" value="<?= htmlspecialchars($settings['whatsapp_default_msg']) ?>">
-                <button type="submit" class="btn btn-gold" style="margin-top:1rem;">Save Contact & Social Settings to MySQL</button>
+                <button type="submit" class="btn btn-gold" style="margin-top:1rem;">Save Contact & Social Settings</button>
             </form>
         </section>
 
         <!-- 6. Admin Security & MySQL Password Management -->
         <section class="admin-card">
-            <h2>🔐 Admin Security — Update MySQL Login Credentials (`admins` Table)</h2>
+            <h2>Administrator account</h2>
             <form method="POST">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                 <input type="hidden" name="action" value="change_admin_password">
@@ -423,40 +374,16 @@ $gallery   = getGalleryItems();
                         <input type="password" name="current_password" required>
                     </div>
                     <div>
-                        <label>New Password (min 8 chars, stored as Bcrypt hash in MySQL)</label>
+                        <label>New password (minimum 8 characters)</label>
                         <input type="password" name="new_password" minlength="8" required>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-gold" style="margin-top:1rem;">Update Admin Credentials in MySQL</button>
+                <button type="submit" class="btn btn-gold" style="margin-top:1rem;">Update administrator credentials</button>
             </form>
         </section>
     </main>
 
-    <script>
-    async function runGeminiSeoAudit() {
-        const box = document.getElementById('gemini-seo-result');
-        box.innerHTML = '<div class="alert-success">Running Gemini AI SEO analysis & auto-optimization...</div>';
-        try {
-            const resp = await fetch('api_gemini_seo.php', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    title: document.getElementById('seo_meta_title').value,
-                    description: document.getElementById('seo_meta_description').value,
-                    keywords: document.getElementById('seo_keywords').value,
-                    api_key: document.getElementById('gemini_api_key').value
-                })
-            });
-            const data = await resp.json();
-            if (data.fixed_title) document.getElementById('seo_meta_title').value = data.fixed_title;
-            if (data.fixed_description) document.getElementById('seo_meta_description').value = data.fixed_description;
-            if (data.fixed_keywords) document.getElementById('seo_keywords').value = data.fixed_keywords;
-            box.innerHTML = `<div class="alert-success"><strong>Gemini SEO Score: ${data.score}/100</strong><br>${data.summary}</div>`;
-        } catch (e) {
-            box.innerHTML = '<div class="alert-error">Failed to run SEO check.</div>';
-        }
-    }
-    </script>
+
 </body>
 </html>
 
