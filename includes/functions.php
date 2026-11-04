@@ -149,6 +149,7 @@ function homepageDefaults(): array {
         'hero_eyebrow' => 'Celebrations, stays & swimming in Kulur, Mangalore',
         'hero_heading' => 'Some places bring you closer.',
         'hero_description' => 'Bring your people together at Charles Gala Venue. Explore our event spaces, enjoy time by the swimming pool, or plan a comfortable stay in Kulur, Mangalore.',
+        'hero_video_url' => 'https://www.youtube.com/watch?v=zVg8op029Mg',
         'hero_image_path' => 'assets/images/resort/lawn.jpg',
         'pool_heading' => 'Your next poolside escape',
         'pool_description' => 'Make time for a refreshing swim with family and friends at Charles Gala Venue in Kulur, Mangalore. Ask our team about current pool timings, entry rates and private bookings before your visit.',
@@ -164,4 +165,20 @@ function publicImage(?string $path): string {
     if (filter_var($path, FILTER_VALIDATE_URL) && parse_url($path, PHP_URL_SCHEME) === 'https') return $path;
     if ($path !== '' && !str_contains($path, '..') && preg_match('~^(uploads|assets/images)/[a-zA-Z0-9_./-]+$~D', $path)) return $path;
     return 'assets/images/placeholder.svg';
+}
+
+
+/** Only accepted YouTube hosts and exact video identifiers become embed URLs. */
+function backgroundYoutubeId(string $url): string {
+    $parts = parse_url(trim($url));
+    if (!$parts || !in_array(strtolower($parts['scheme'] ?? ''), ['http', 'https'], true)) return '';
+    $host = strtolower($parts['host'] ?? '');
+    $path = $parts['path'] ?? '';
+    $id = '';
+    if ($host === 'youtu.be') $id = trim($path, '/');
+    elseif (in_array($host, ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtube-nocookie.com', 'www.youtube-nocookie.com'], true)) {
+        if ($path === '/watch') { parse_str($parts['query'] ?? '', $query); $id = $query['v'] ?? ''; }
+        elseif (preg_match('~^/(?:embed|shorts)/([a-zA-Z0-9_-]{11})/?$~D', $path, $match)) $id = $match[1];
+    }
+    return is_string($id) && preg_match('/^[a-zA-Z0-9_-]{11}$/D', $id) ? $id : '';
 }
