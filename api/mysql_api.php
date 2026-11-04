@@ -14,10 +14,7 @@ $action = $_GET['action'] ?? ($input['action'] ?? 'bootstrap');
 try {
     if ($action === 'bootstrap') {
         $settings = getSiteSettings();
-        // Mask raw gemini_api_key if not authenticated
-        if (!isAdminAuthenticated()) {
-            unset($settings['gemini_api_key']);
-        }
+        unset($settings['gemini_api_key']);
         echo json_encode([
             'ok'        => true,
             'engine'    => 'MySQL PDO (charles_gala_db)',
@@ -95,6 +92,10 @@ try {
         exit;
     }
 
+    if ($method !== 'POST' || !verifyCsrfToken($input['csrf_token'] ?? '')) {
+        http_response_code(403); echo json_encode(['ok'=>false,'error'=>'Valid POST and CSRF token required.']); exit;
+    }
+
     if ($action === 'change_password' && $method === 'POST') {
         $currentPassword = $input['current_password'] ?? '';
         $newUsername     = trim($input['new_username'] ?? 'admin');
@@ -124,7 +125,7 @@ try {
         $allowedKeys = [
             'site_name', 'phone_primary', 'whatsapp_number', 'whatsapp_default_msg',
             'email', 'address', 'plus_code', 'instagram_url', 'youtube_url', 'facebook_url',
-            'seo_meta_title', 'seo_meta_description', 'seo_keywords', 'seo_score', 'gemini_api_key'
+            'google_maps_url'
         ];
         foreach ($allowedKeys as $k) {
             if (isset($input[$k])) {
@@ -138,5 +139,6 @@ try {
     echo json_encode(['ok' => true]);
 } catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
+    echo json_encode(['ok' => false, 'error' => 'Request could not be completed.']);
 }
+

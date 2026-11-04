@@ -2,11 +2,8 @@
 /** Search and social metadata generated from the same content as the page. */
 $settings = ($settings ?? getSiteSettings()) + homepageDefaults();
 $offerings = $offerings ?? getOfferings(true);
-$canonical = trim($settings['seo_canonical_url'] ?? '');
-if (!filter_var($canonical, FILTER_VALIDATE_URL) || !in_array(parse_url($canonical, PHP_URL_SCHEME), ['http', 'https'], true)) {
-    $canonical = 'https://charlesgala.in/';
-}
-$canonical = rtrim($canonical, '/') . '/';
+require_once __DIR__ . '/seo.php';
+$canonical = seoCanonical($settings);
 $title = trim($settings['seo_meta_title'] ?? '') ?: $settings['site_name'] . ' | Event Venue & Pool in Mangalore';
 $description = trim($settings['seo_meta_description'] ?? '') ?: 'Explore event spaces, swimming pool bookings and rooms at Charles Gala Venue in Kulur, Mangalore. Contact our team for availability and packages.';
 $imagePath = publicImage($settings['hero_image_path']);
@@ -21,7 +18,7 @@ $venue = [
 ];
 if (!empty($settings['email'])) $venue['email'] = $settings['email'];
 if (!empty($settings['google_maps_url'])) $venue['hasMap'] = $settings['google_maps_url'];
-if (is_numeric($settings['latitude'] ?? '') && is_numeric($settings['longitude'] ?? '')) {
+if (is_numeric($settings['latitude'] ?? '') && is_numeric($settings['longitude'] ?? '') && abs((float)$settings['latitude']) <= 90 && abs((float)$settings['longitude']) <= 180) {
     $venue['geo'] = ['@type' => 'GeoCoordinates', 'latitude' => (float)$settings['latitude'], 'longitude' => (float)$settings['longitude']];
 }
 $venue['sameAs'] = array_values(array_filter([
@@ -33,13 +30,21 @@ $jsonLd = ['@context' => 'https://schema.org', '@graph' => [
     ['@type' => 'WebPage', '@id' => $canonical . '#webpage', 'url' => $canonical, 'name' => $title, 'description' => $description,
         'isPartOf' => ['@id' => $canonical . '#website'], 'about' => ['@id' => $canonical . '#venue'], 'inLanguage' => 'en-IN'],
 ]];
+$services = [];
+foreach ($offerings as $item) {
+    $services[] = ['@type'=>'Offer', 'itemOffered'=>['@type'=>'Service','name'=>$item['title'],'description'=>$item['short_desc'],'provider'=>['@id'=>$canonical.'#venue']]];
+}
+if ($services) $jsonLd['@graph'][0]['hasOfferCatalog'] = ['@type'=>'OfferCatalog','name'=>'Venue spaces and experiences','itemListElement'=>$services];
+$faqEntries = [];
+foreach (seoFaqs($settings) as $faq) $faqEntries[] = ['@type'=>'Question','name'=>$faq['question'],'acceptedAnswer'=>['@type'=>'Answer','text'=>$faq['answer']]];
+if ($faqEntries) $jsonLd['@graph'][] = ['@type'=>'FAQPage','@id'=>$canonical.'#faq','mainEntity'=>$faqEntries];
 ?>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= htmlspecialchars($title) ?></title>
 <meta name="description" content="<?= htmlspecialchars($description) ?>">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<meta name="theme-color" content="#183e35">
+<meta name="theme-color" content="#0c1713">
 <link rel="canonical" href="<?= htmlspecialchars($canonical) ?>">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="en_IN">
@@ -55,3 +60,4 @@ $jsonLd = ['@context' => 'https://schema.org', '@graph' => [
 <meta name="twitter:image" content="<?= htmlspecialchars($imageUrl) ?>">
 <link rel="icon" type="image/png" href="assets/images/logo.png">
 <script type="application/ld+json"><?= json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
+

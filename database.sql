@@ -62,11 +62,10 @@ INSERT INTO `site_settings` (`setting_key`, `setting_value`) VALUES
 ('instagram_url', 'https://www.instagram.com/charlesgalavenue'),
 ('youtube_url', 'https://www.youtube.com/@charlesgalavenue'),
 ('facebook_url', 'https://www.facebook.com/charlesgalavenue'),
-('seo_meta_title', 'Charles Gala Venue Mangalore | Best Stay, 1500-Capacity Open Ground Hall & Pool Booking in Kulur'),
-('seo_meta_description', 'Book Charles Gala Venue in Kulur, Melkoppala, Mangalore (575013). Featuring luxury stay rooms, a 1500-guest Open Ground Hall, 250-guest AC Mini Hall, public & private swimming pool booking for anyone, and bespoke event decorations & lighting.'),
+('seo_meta_title', 'Charles Gala Venue | Events & Pool in Mangalore'),
+('seo_meta_description', 'Explore event spaces, swimming pool bookings and stays at Charles Gala Venue in Kulur, Mangalore. Contact our team for availability and packages.'),
 ('seo_keywords', 'best stay in Mangalore, open ground hall Mangalore, pool for anyone Mangalore, pool booking Kulur, Charles Gala Venue, wedding lawn 1500 capacity Mangalore, mini hall 250 capacity Kulur, event decorations and lightings Mangalore, resort stay Melkoppala 575013'),
 ('seo_canonical_url', 'https://charlesgala.in/'),
-('seo_score', '98'),
 ('gemini_api_key', ''),
 ('gemini_model', 'gemini-2.5-flash')
 ON DUPLICATE KEY UPDATE `setting_value` = VALUES(`setting_value`);
@@ -170,10 +169,10 @@ INSERT INTO `gallery_items` (`id`, `media_type`, `title`, `category`, `image_pat
 (7, 'youtube', 'Charles Gala Venue — Full Property & Pool Video Showcase', 'YouTube Tour', 'uploads/gallery/hero.jpg', 'https://www.youtube.com/watch?v=ScMzIvxBSi4', 'ScMzIvxBSi4', 1, 7)
 ON DUPLICATE KEY UPDATE `title` = VALUES(`title`);
 
--- 7. SEO Audit Logs Table (Records Gemini AI SEO Checks & Auto-Fixes in MySQL)
+-- 7. SEO Audit Logs Table (Records versioned editorial audits and optional Gemini insights in MySQL)
 CREATE TABLE IF NOT EXISTS `seo_audit_logs` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `score` INT NOT NULL DEFAULT 98,
+  `score` INT NOT NULL DEFAULT 0,
   `meta_title` VARCHAR(255) NOT NULL,
   `meta_description` TEXT NOT NULL,
   `keywords` TEXT NOT NULL,
@@ -181,9 +180,4 @@ CREATE TABLE IF NOT EXISTS `seo_audit_logs` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `seo_audit_logs` (`score`, `meta_title`, `meta_description`, `keywords`, `summary`) VALUES
-(98,
- 'Charles Gala Venue Mangalore | Best Stay, 1500-Capacity Open Ground Hall & Pool Booking in Kulur',
- 'Book Charles Gala Venue in Kulur, Melkoppala, Mangalore (575013). Featuring luxury stay rooms, a 1500-guest Open Ground Hall, 250-guest AC Mini Hall, public & private swimming pool booking for anyone, and bespoke event decorations & lighting.',
- 'best stay in Mangalore, open ground hall Mangalore, pool for anyone Mangalore, pool booking Kulur',
- 'Initial production MySQL SEO audit verified all priority keywords and LocalBusiness + EventVenue schema.');
+-- Reports are created only when an administrator runs a versioned audit.

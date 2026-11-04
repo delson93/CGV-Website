@@ -1,0 +1,30 @@
+<?php
+require_once __DIR__.'/../includes/functions.php';
+require_once __DIR__.'/../includes/seo.php';
+function check($condition,$message) { if(!$condition) throw new RuntimeException($message); }
+check(backgroundYoutubeId('https://www.youtube.com/watch?v=zVg8op029Mg')==='zVg8op029Mg','YouTube URL');
+check(backgroundYoutubeId('https://youtu.be/zVg8op029Mg')==='zVg8op029Mg','Short URL');
+check(backgroundYoutubeId('https://youtube.com.evil.test/watch?v=zVg8op029Mg')==='','Host validation');
+check(backgroundYoutubeId('')==='','Blank disables video');
+check(seoCanonical(['seo_canonical_url'=>'javascript:alert(1)'])==='https://charlesgala.in/','Invalid canonical');
+check(seoCanonical(['seo_canonical_url'=>'https://example.org/venue'])==='https://example.org/venue/','Subdirectory canonical');
+check(seoCanonical(['seo_canonical_url'=>'https://user:pass@example.org/'])==='https://charlesgala.in/','No URL credentials');
+check(count(seoKeywords('venue, pool, venue'))===2,'Deduplicated keywords');
+$empty=seoAudit([],[],[],[]);
+check($empty['scores']['seo']===0,'No fabricated SEO score');
+check($empty['scores']['ai']===0,'No fabricated AI score');
+$s=homepageDefaults()+['site_name'=>'Charles Gala Venue','address'=>'Kulur, Mangalore','email'=>'info@example.org','latitude'=>'12.9','longitude'=>'74.8','instagram_url'=>'https://instagram.com/example','seo_meta_title'=>'Charles Gala Venue | Events & Pool in Mangalore','seo_meta_description'=>'Explore event spaces, swimming pool bookings and stays at Charles Gala Venue in Kulur, Mangalore. Contact our team for availability and packages.','seo_canonical_url'=>'https://example.org/','seo_keywords'=>'Charles Gala Venue, missing phrase','gemini_api_key'=>'DO_NOT_LEAK'];
+$offer=[['title'=>'Lawn','short_desc'=>str_repeat('A venue for celebrations with family and friends. ',25),'capacity_label'=>'Enquire']];
+$r=seoAudit($s,[],$offer,[['title'=>'Lawn at the venue']]);
+check($r['scores']['seo']===100 && $r['scores']['ai']===100,'Complete fixture scores');
+check(!str_contains(json_encode($r),'DO_NOT_LEAK'),'Secrets excluded');
+check($r['keywords'][0]['in_content'] && !$r['keywords'][1]['in_content'],'Coverage evidence');
+$s['seo_meta_title']='X'; $changed=seoAudit($s,[],$offer,[['title'=>'Lawn at the venue']]);
+check($r['scores']['seo']-$changed['scores']['seo']===15,'Meaningful score delta');
+$s['latitude']=999;check(seoAudit($s,[],$offer,[])['scores']['ai']===85,'Invalid coordinates');
+check(seoFaqs(['seo_faq_json'=>'garbage'])===[],'Invalid FAQ JSON');
+check(seoFaqs(['seo_faq_json'=>'[]'])===[],'Can remove default FAQs');
+putenv('GEMINI_API_KEY');check(seoGemini($r,[])['status']==='unavailable','No key is honest failure');
+$xml=simplexml_load_string(seoSitemap('https://example.org/'));
+check((string)$xml->url->loc==='https://example.org/','Sitemap XML');
+echo "All SEO and video validation tests passed.\n";

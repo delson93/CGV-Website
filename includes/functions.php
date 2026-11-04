@@ -165,3 +165,21 @@ function publicImage(?string $path): string {
     if ($path !== '' && !str_contains($path, '..') && preg_match('~^(uploads|assets/images)/[a-zA-Z0-9_./-]+$~D', $path)) return $path;
     return 'assets/images/placeholder.svg';
 }
+
+
+/** Accept only a YouTube video URL or an exact video ID. Blank disables video. */
+function backgroundYoutubeId(string $value): string {
+    $value = trim($value);
+    if (preg_match('/^[\w-]{11}$/D', $value)) return $value;
+    $url = parse_url($value);
+    if (!$url || !in_array($url['scheme'] ?? '', ['https', 'http'], true)) return '';
+    $host = strtolower($url['host'] ?? '');
+    $id = '';
+    if ($host === 'youtu.be') $id = trim($url['path'] ?? '', '/');
+    if (in_array($host, ['youtube.com','www.youtube.com','m.youtube.com','www.youtube-nocookie.com'], true)) {
+        parse_str($url['query'] ?? '', $query);
+        $id = is_string($query['v'] ?? null) ? $query['v'] : '';
+        if (!$id && preg_match('~^/(?:embed|shorts)/([\w-]{11})/?$~D', $url['path'] ?? '', $m)) $id = $m[1];
+    }
+    return preg_match('/^[\w-]{11}$/D', $id) ? $id : '';
+}
