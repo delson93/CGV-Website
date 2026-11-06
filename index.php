@@ -33,10 +33,10 @@ $occasions = ['Wedding', 'Reception', 'Engagement', 'Birthday', 'Corporate event
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/venue.css?v=3.1">
+<link rel="stylesheet" href="assets/css/venue.css?v=3.2">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-<script src="assets/js/venue.js?v=3.1" defer></script>
+<script src="assets/js/venue.js?v=3.2" defer></script>
 </head><body>
 <div class="loader" aria-hidden="true"><div class="loader-inner"><img src="assets/images/logo.png" width="56" height="56" alt=""><span class="loader-name"><?= esc($settings['site_name']) ?></span><span class="loader-count">0</span><i class="loader-line"></i></div></div>
 <div class="cursor" aria-hidden="true"><span class="cursor-dot"></span><span class="cursor-ring"><em></em></span></div>
@@ -81,8 +81,20 @@ $occasions = ['Wedding', 'Reception', 'Engagement', 'Birthday', 'Corporate event
 <form class="booking" data-wa="<?= esc(buildWhatsAppUrl($settings['whatsapp_number'] ?? '', '')) ?>" aria-labelledby="booking-title"><p class="kicker" id="booking-title">Quick enquiry</p><h3>Tell us about your occasion</h3>
 <fieldset><legend>Occasion</legend><div class="chips"><?php foreach ($occasions as $k=>$o): ?><label><input type="radio" name="occasion" value="<?= esc($o) ?>"<?= $k===0 ? ' checked' : '' ?>><span><?= esc($o) ?></span></label><?php endforeach; ?></div></fieldset>
 <div class="row"><label>Guests<select name="guests"><option>Up to 50</option><option>50 – 150</option><option selected>150 – 400</option><option>400 – 800</option><option>800 – 1,500</option></select></label><label>Preferred date<input type="date" name="date"></label></div>
-<a class="btn solid wa-compose" href="<?= esc($wa) ?>" target="_blank" rel="noopener" data-magnetic>Send enquiry on WhatsApp</a><p class="note">Opens WhatsApp with your details pre-filled. No account or payment is needed to ask.</p></form></div>
-<?php if (!empty($settings['google_maps_embed']) && str_starts_with($settings['google_maps_embed'], 'https://maps.google.com/')): ?><div class="wrap map" data-reveal><button type="button" class="map-load" data-src="<?= esc($settings['google_maps_embed']) ?>"><span>Show the map</span><small>Loads Google Maps</small></button></div><?php endif; ?></section>
+<a class="btn solid wa-compose" href="<?= esc($wa) ?>" target="_blank" rel="noopener">Send enquiry on WhatsApp</a><p class="note">Opens WhatsApp with your details pre-filled. No account or payment is needed to ask.</p></form></div>
+<?php
+$mapUrl = trim($settings['google_maps_embed'] ?? '');
+$mapParts = parse_url($mapUrl);
+$mapHost = strtolower($mapParts['host'] ?? '');
+$mapPath = $mapParts['path'] ?? '';
+$validMap = filter_var($mapUrl, FILTER_VALIDATE_URL)
+    && ($mapParts['scheme'] ?? '') === 'https'
+    && !isset($mapParts['user']) && !isset($mapParts['pass'])
+    && (($mapHost === 'maps.google.com' && ($mapPath === '' || $mapPath === '/' || str_starts_with($mapPath, '/maps')))
+        || (in_array($mapHost, ['google.com', 'www.google.com'], true) && preg_match('~^/maps/embed(?:/|$)~', $mapPath)));
+if ($validMap): ?>
+<div class="wrap map"><iframe src="<?= esc($mapUrl) ?>" title="Map of <?= esc($settings['site_name']) ?>" width="1200" height="450" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe><p class="map-directions"><a class="link" href="<?= esc(webLink($settings['google_maps_url'] ?? '')) ?>" target="_blank" rel="noopener">Open directions in Google Maps ↗</a></p></div>
+<?php endif; ?></section>
 </main>
 <footer><div class="wrap"><a class="brand" href="#home"><?= esc($settings['site_name']) ?></a><nav aria-label="Social links"><?php foreach (['instagram_url'=>'Instagram','facebook_url'=>'Facebook','youtube_url'=>'YouTube'] as $key=>$label): if (!empty($settings[$key])): ?><a href="<?= esc(webLink($settings[$key])) ?>" target="_blank" rel="noopener"><?= $label ?> ↗</a><?php endif; endforeach; ?></nav></div><div class="wrap credits"><span>© <?= date('Y') ?> <?= esc($settings['site_name']) ?></span><span>Designed and Developed by <a href="https://codeixe.com/">CodeIXE AI Solutions</a></span></div></footer>
 <div class="dock" aria-label="Quick contact"><a href="<?= esc($wa) ?>" target="_blank" rel="noopener" class="dock-wa"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 12 12 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3Z"/></svg><span>WhatsApp</span></a><a href="<?= esc($call) ?>" class="dock-call"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.2 11.4 11.4 0 0 0 3.6.6 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .6 3.6 1 1 0 0 1-.3 1Z"/></svg><span>Call</span></a></div>
