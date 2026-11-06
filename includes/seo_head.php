@@ -10,6 +10,11 @@ $imagePath = publicImage($settings['hero_image_path']);
 // A brand logo gives social previews a useful image while the background is a placeholder.
 if ($imagePath === 'assets/images/placeholder.svg') $imagePath = 'assets/images/logo.png';
 $imageUrl = str_starts_with($imagePath, 'https://') ? $imagePath : $canonical . $imagePath;
+$socialTitle = trim($settings['seo_social_title'] ?? '') ?: $title;
+$socialDescription = trim($settings['seo_social_description'] ?? '') ?: $description;
+$socialImage = trim($settings['seo_social_image'] ?? '');
+if (!filter_var($socialImage, FILTER_VALIDATE_URL) || parse_url($socialImage, PHP_URL_SCHEME) !== 'https' || parse_url($socialImage, PHP_URL_USER) !== null || parse_url($socialImage, PHP_URL_PASS) !== null) $socialImage = $imageUrl;
+$socialAlt = trim($settings['seo_social_image_alt'] ?? '') ?: $settings['site_name'];
 $venue = [
     '@type' => 'EventVenue', '@id' => $canonical . '#venue',
     'name' => $settings['site_name'], 'description' => $description,
@@ -49,15 +54,18 @@ if ($faqEntries) $jsonLd['@graph'][] = ['@type'=>'FAQPage','@id'=>$canonical.'#f
 <meta property="og:type" content="website">
 <meta property="og:locale" content="en_IN">
 <meta property="og:site_name" content="<?= htmlspecialchars($settings['site_name']) ?>">
-<meta property="og:title" content="<?= htmlspecialchars($title) ?>">
-<meta property="og:description" content="<?= htmlspecialchars($description) ?>">
+<meta property="og:title" content="<?= htmlspecialchars($socialTitle) ?>">
+<meta property="og:description" content="<?= htmlspecialchars($socialDescription) ?>">
 <meta property="og:url" content="<?= htmlspecialchars($canonical) ?>">
-<meta property="og:image" content="<?= htmlspecialchars($imageUrl) ?>">
-<meta property="og:image:alt" content="<?= htmlspecialchars($settings['site_name']) ?>">
+<meta property="og:image" content="<?= htmlspecialchars($socialImage) ?>">
+<meta property="og:image:alt" content="<?= htmlspecialchars($socialAlt) ?>">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="<?= htmlspecialchars($title) ?>">
-<meta name="twitter:description" content="<?= htmlspecialchars($description) ?>">
-<meta name="twitter:image" content="<?= htmlspecialchars($imageUrl) ?>">
+<meta name="twitter:title" content="<?= htmlspecialchars($socialTitle) ?>">
+<meta name="twitter:description" content="<?= htmlspecialchars($socialDescription) ?>">
+<meta name="twitter:image" content="<?= htmlspecialchars($socialImage) ?>">
 <link rel="icon" type="image/png" href="assets/images/logo.png">
 <script type="application/ld+json"><?= json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
 
+
+<meta name="twitter:image:alt" content="<?= htmlspecialchars($socialAlt) ?>">
+<?php foreach(['seo_google_verification'=>'google-site-verification','seo_bing_verification'=>'msvalidate.01'] as $key=>$name): if(trim($settings[$key]??'')!==''): ?><meta name="<?= $name ?>" content="<?= htmlspecialchars($settings[$key],ENT_QUOTES,'UTF-8') ?>"><?php endif; endforeach; ?>
