@@ -11,6 +11,8 @@ if (isAdminAuthenticated()) {
     exit;
 }
 
+header('X-Robots-Tag: noindex, nofollow');
+header('Cache-Control: no-store');
 $settings = getSiteSettings();
 $error = '';
 $csrfToken = generateCsrfToken();
@@ -67,24 +69,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login — <?= htmlspecialchars($settings['site_name']) ?></title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <title>Sign in | <?= htmlspecialchars($settings['site_name']) ?></title>
+    <link rel="stylesheet" href="../assets/css/admin.css?v=4">
 </head>
-<body class="admin-login-body">
-    <div class="login-box">
+<body class="admin-login">
+    <div class="login-box card">
         <img src="../assets/images/logo.png" alt="Logo" width="72" height="72" style="margin:0 auto 12px;">
         <h2><?= htmlspecialchars($settings['site_name']) ?></h2>
-        <p style="font-size:0.85rem;color:#64748b;margin-bottom:1.25rem;">MySQL Admin Backend Authentication</p>
+        <p style="font-size:0.85rem;color:#64748b;margin-bottom:1.25rem;">Sign in to manage your venue website.</p>
         <?php if ($error): ?>
-            <div class="alert-error"><?= htmlspecialchars($error) ?></div>
+            <div class="error" role="alert"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
         <form method="POST" autocomplete="on">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
             <label for="login-username">Admin Username or Email</label>
-            <input type="text" id="login-username" name="username" placeholder="Enter admin username" required autofocus>
+            <input type="text" id="login-username" name="username" autocomplete="username" placeholder="Enter admin username" required autofocus>
             <label for="login-password">Password</label>
-            <input type="password" id="login-password" name="password" placeholder="Enter password" required>
-            <button type="submit" class="btn btn-gold" style="width:100%;margin-top:1rem;">Sign In to MySQL Admin Panel</button>
+            <input type="password" id="login-password" name="password" autocomplete="current-password" placeholder="Enter password" required>
+            <button type="submit" class="btn btn-gold" style="width:100%;margin-top:1rem;">Sign in</button>
         </form>
         <p style="margin-top:1.25rem;font-size:0.85rem;"><a href="../index.php">← Return to Public Website</a></p>
     </div>

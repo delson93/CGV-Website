@@ -26,7 +26,11 @@ function seoLength(string $text): int { return function_exists('mb_strlen') ? mb
 function seoAudit(array $s, array $about, array $offerings, array $gallery): array {
     $title = trim($s['seo_meta_title'] ?? ''); $desc = trim($s['seo_meta_description'] ?? '');
     $text = trim(strip_tags(implode(' ', [$s['hero_heading'] ?? '',$s['hero_description'] ?? '',$s['pool_heading'] ?? '',$s['pool_description'] ?? '',$about['headline'] ?? '',$about['subheadline'] ?? '',$about['content_html'] ?? '',$s['address'] ?? ''])));
+    foreach(['copy_spaces_heading','copy_spaces_description','copy_gallery_heading','copy_gallery_description','copy_visit_heading','copy_visit_description'] as $key) $text .= ' '.strip_tags($s[$key] ?? (function_exists('publicCopyDefaults') ? (publicCopyDefaults()[$key] ?? '') : ''));
     foreach($offerings as $o) $text .= ' '.($o['title'] ?? '').' '.($o['short_desc'] ?? '').' '.($o['capacity_label'] ?? '');
+    foreach($offerings as $o) foreach(json_decode($o['features_json']??'[]',true)?:[] as $feature) if(is_string($feature)) $text.=' '.strip_tags($feature);
+    foreach(json_decode($about['highlights_json']??'[]',true)?:[] as $highlight) if(is_string($highlight)) $text.=' '.strip_tags($highlight);
+    foreach($gallery as $g) $text.=' '.strip_tags(($g['title']??'').' '.($g['category']??''));
     $faqs=seoFaqs($s); foreach($faqs as $faq) $text.=' '.$faq['question'].' '.$faq['answer'];
     $coverage=[]; foreach(seoKeywords($s['seo_keywords'] ?? '') as $keyword) $coverage[]=['keyword'=>$keyword,'in_title'=>stripos($title,$keyword)!==false,'in_description'=>stripos($desc,$keyword)!==false,'in_content'=>stripos($text,$keyword)!==false];
     $checks=[];

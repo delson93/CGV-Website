@@ -3,6 +3,7 @@
    Motion respects prefers-reduced-motion, Save-Data and the on-page "Pause motion" toggle. */
 (() => {
   'use strict';
+  const copy = JSON.parse(document.getElementById('venue-copy')?.textContent || '{}');
   const root = document.documentElement;
   const $ = (s, c = document) => c.querySelector(s);
   const $$ = (s, c = document) => Array.from(c.querySelectorAll(s));
@@ -27,7 +28,7 @@
     header.classList.toggle('open', open);
     root.classList.toggle('menu-open', open);
     menu.setAttribute('aria-expanded', String(open));
-    $('.menu-label', menu).textContent = open ? 'Close' : 'Menu';
+    $('.menu-label', menu).textContent = open ? (copy.copy_menu_close || 'Close') : (copy.copy_menu_open || 'Menu');
     if (!desktop.matches) $$('main, footer, .dock').forEach(el => { el.inert = open; });
     else $$('main, footer, .dock').forEach(el => { el.inert = false; });
   };
@@ -70,7 +71,7 @@
   const video = $('[data-video]');
   const sync = () => {
     root.classList.toggle('motion-paused', paused);
-    toggle.textContent = paused ? 'Play motion' : 'Pause motion';
+    toggle.textContent = paused ? (copy.copy_motion_play || 'Play motion') : (copy.copy_motion_pause || 'Pause motion');
     toggle.setAttribute('aria-pressed', String(paused));
     if (player?.pauseVideo) { if (paused || document.hidden) player.pauseVideo(); else { player.mute(); player.playVideo(); } }
     if (paused) { teardownMotion(); dust?.stop(); if (hasGsap) { gsap.killTweensOf($$('[data-magnetic], .faq-body')); gsap.set($$('[data-magnetic]'), { clearProps: 'transform' }); gsap.set($$('.faq-body'), { clearProps: 'height,opacity' }); } } else { buildMotion(); dust?.start(); }
@@ -175,7 +176,7 @@
       const viewTarget = t.closest?.('[data-photo]');
       cursor.classList.toggle('is-view', Boolean(viewTarget));
       cursor.classList.toggle('is-link', !viewTarget && Boolean(t.closest?.('a,button,summary,label,select,input,[data-magnetic]')));
-      $('em', ring).textContent = viewTarget ? 'View' : '';
+      $('em', ring).textContent = viewTarget ? (copy.copy_cursor_view || 'View') : '';
     }, { passive: true });
     document.addEventListener('mouseleave', () => cursor.classList.add('is-hidden'));
   } else cursor?.remove();
@@ -343,8 +344,9 @@
       const occasion = $('input[name=occasion]:checked', booking)?.value || 'an event';
       const guests = $('select[name=guests]', booking)?.value || '';
       const date = $('input[name=date]', booking)?.value;
-      const when = date ? new Date(date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : 'a date to be confirmed';
-      const msg = `Hello Charles Gala Venue! I'm planning a ${occasion.toLowerCase()} for ${guests} guests on ${when}. Could you share availability and packages?`;
+      const when = date ? new Date(date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : (copy.copy_booking_date_fallback || 'a date to be confirmed');
+      const values = {venue: copy.site_name || '', occasion, guests, date: when};
+      const msg = (copy.copy_booking_message || '{venue}: {occasion}, {guests}, {date}').replace(/\{(venue|occasion|guests|date)\}/g, (_, key) => values[key]);
       if (base) out.href = base + encodeURIComponent(msg);
     };
     booking.addEventListener('change', compose);
