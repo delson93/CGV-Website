@@ -22,6 +22,8 @@
   const menu = $('.menu');
   const nav = $('#navigation');
   const setMenu = open => {
+    open = Boolean(open && !desktop.matches);
+    if (open) header.classList.remove('hide');
     header.classList.toggle('open', open);
     root.classList.toggle('menu-open', open);
     menu.setAttribute('aria-expanded', String(open));
@@ -42,7 +44,7 @@
     }
   });
   root.classList.add('nav-ready');
-  desktop.addEventListener('change', () => setMenu(false));
+  desktop.addEventListener('change', () => { setMenu(false); header.classList.remove('hide'); });
 
   /* ---------- scroll state: progress bar, glass header, hide on scroll down, contact dock ---------- */
   const dock = $('.dock');
@@ -55,7 +57,7 @@
       const range = root.scrollHeight - innerHeight;
       root.style.setProperty('--p', range > 0 ? y / range : 0);
       header.classList.toggle('solid', y > 40);
-      header.classList.toggle('hide', y > lastY && y > 320 && !header.classList.contains('open'));
+      header.classList.toggle('hide', desktop.matches && y > lastY && y > 320 && !header.classList.contains('open'));
       dock?.classList.toggle('show', y > (hero?.offsetHeight || 600) * .6);
       lastY = y;
       frame = null;
@@ -212,7 +214,7 @@
         const rule = $('.rule', el);
         if (rule) tl.from(rule, { scaleX: 0, duration: 1, ease: 'power3.out' }, 0);
         if (heads.length) tl.from(heads, { yPercent: 115, rotate: 3, duration: 1.1, ease: 'power4.out', stagger: .05 }, 0);
-        const rest = $$('.head > p, .space-copy > :not(.features), .features li, .pool .wrap > *, .welcome .wrap > div > :not(.highlights), .highlights li, .filters, .faq-list details, .visit-copy > :not(.details), .details > div, .booking > *, .map-load', el)
+        const rest = $$('.head > p, .space-copy > :not(.features), .features li, .pool .wrap > *, .welcome .wrap > div > :not(.highlights), .highlights li, .filters, .faq-list details, .visit-copy > :not(.details), .details > div', el)
           .filter(n => !n.closest('[data-split]') && !n.matches('[data-split], .rule'));
         if (rest.length) tl.from(rest, { y: 36, opacity: 0, duration: 1, ease: 'power3.out', stagger: .06 }, .15);
         const photo = $('.photo.arch', el);
@@ -352,13 +354,7 @@
     compose();
   }
 
-  /* ---------- lazy map ---------- */
-  $('.map-load')?.addEventListener('click', e => {
-    const btn = e.currentTarget;
-    const iframe = document.createElement('iframe');
-    iframe.src = btn.dataset.src; iframe.title = 'Map of Charles Gala Venue'; iframe.loading = 'lazy'; iframe.referrerPolicy = 'no-referrer-when-downgrade'; iframe.allowFullscreen = true;
-    btn.replaceWith(iframe);
-  });
+  // The map is server-rendered with native lazy loading; no click handler is required.
 
   /* ---------- background video (unchanged behaviour: image first, player deferred) ---------- */
   let requested = false;
