@@ -32,6 +32,9 @@ function publicCopyGroups(): array {
 'copy_spaces_kicker' => 'Our spaces',
 'copy_spaces_heading' => 'Good company. A great setting.',
 'copy_spaces_description' => 'From a celebration with everyone you love to a relaxed day by the pool, find a space that suits your plans.',
+'copy_booking_details_label' => 'Booking details',
+'copy_booking_notes_label' => 'Additional charges and booking notes',
+'copy_space_details' => 'View more details',
 'copy_space_cta' => 'Enquire about this space',
 ],
 'Pool & about' => [

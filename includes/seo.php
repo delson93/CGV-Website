@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/booking.php';
 /** Versioned, deterministic editorial checks, not search-engine rankings or a live crawl. */
 function seoCanonical(array $settings): string {
     $url = trim($settings['seo_canonical_url'] ?? '');
@@ -68,5 +69,11 @@ function seoGemini(array $audit, array $settings): array {
     return trim($result) ? ['status'=>'complete','text'=>substr(trim($result),0,10000),'model'=>$model] : ['status'=>'unavailable','text'=>'Gemini returned no usable text. Your local report was saved.'];
 }
 function seoSitemap(string $canonical): string {
-    return '<?xml version="1.0" encoding="UTF-8"?>'."\n".'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>'.htmlspecialchars($canonical,ENT_XML1|ENT_QUOTES,'UTF-8').'</loc></url></urlset>'."\n";
+    $root = rtrim($canonical, '/') . '/';
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    foreach (array_merge([''], array_values(bookingRoutes())) as $path) {
+        $xml .= '  <url><loc>' . htmlspecialchars($root . $path, ENT_XML1 | ENT_QUOTES, 'UTF-8') . "</loc></url>\n";
+    }
+    return $xml . "</urlset>\n";
 }

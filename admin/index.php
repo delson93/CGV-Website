@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errorMsg = 'Your session token expired. Reload this page and try again.';
     } else try {
         $action = $_POST['action'] ?? '';
-        if (!in_array($action, ['save_copy','save_settings','save_homepage','save_about','save_offering','add_gallery','save_gallery','change_admin_password'],true)) throw new RuntimeException('Unknown save action.');
+        if (!in_array($action, ['save_booking','save_copy','save_settings','save_homepage','save_about','save_offering','add_gallery','save_gallery','change_admin_password'],true)) throw new RuntimeException('Unknown save action.');
         foreach ($_FILES as $file) {
             if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE && ($file['error'] ?? 0) !== UPLOAD_ERR_OK) throw new RuntimeException('The image could not be uploaded. Check its size and try again.');
             if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK && !in_array(mime_content_type($file['tmp_name']), ['image/jpeg','image/png','image/webp'],true)) throw new RuntimeException('Choose a JPEG, PNG or WebP image.');
@@ -33,6 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (in_array($action,['save_offering','save_gallery','add_gallery'],true) && trim((string)($_POST['title']??''))==='') throw new RuntimeException('Enter a title before saving.');
         if ($action === 'change_admin_password' && trim((string)($_POST['new_username']??''))==='') throw new RuntimeException('Enter a username.');
         $pdo->beginTransaction();
+        if ($action === 'save_booking') {
+            $key = (string)($_POST['booking_key'] ?? '');
+            if (!isset(bookingRoutes()[$key])) throw new RuntimeException('Unknown booking page.');
+            $booking = bookingFromForm($key, $_POST);
+            updateSiteSetting('booking_' . $key, json_encode($booking, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
+            $flash = 'Booking details saved.';
+        }
         if ($action === 'save_copy') {
             foreach (publicCopyDefaults() as $key=>$default) {
                 if (isset($_POST[$key]) && is_string($_POST[$key])) updateSiteSetting($key, substr(trim($_POST[$key]),0,10000));
@@ -199,6 +206,7 @@ adminStart($page, adminPages()[$page], $settings);
 <?php elseif($page==='copy'): ?>
 <p class="page-intro">Edit public website labels and section copy. Use the other sections for venue details, photographs and FAQs.</p>
 <?php adminFormStart('save_copy',$csrfToken); foreach(publicCopyGroups() as $group=>$fields): ?><section class="card"><h2><?= adminEscape($group) ?></h2><div class="form-grid"><?php foreach($fields as $key=>$default): adminField($key,ucwords(str_replace('_',' ',substr($key,5))),$settings[$key],$key==='copy_footer_credit_url'?'url':'textarea',in_array($key,['copy_occasion_options','copy_guest_options'])?'One choice per line.':($key==='copy_booking_message'?'Available placeholders: {venue}, {occasion}, {guests}, {date}.':'')); endforeach; ?></div></section><?php endforeach; adminSave('Save website text'); ?>
+<?php elseif($page==='bookings'): require __DIR__ . '/booking_editor.php'; ?>
 <?php elseif($page==='offerings'): ?>
 <p class="page-intro">Manage the names, descriptions, capacities and features guests see on your website.</p>
 <?php foreach($offerings as $off): ?><section class="card"><h2><?= adminEscape($off['title']) ?></h2><?php adminFormStart('save_offering',$csrfToken); ?><input type="hidden" name="offering_id" value="<?= (int)$off['id'] ?>"><input type="hidden" name="existing_image" value="<?= adminEscape($off['image_path']) ?>"><div class="form-grid"><?php foreach(['title'=>'Title','badge'=>'Badge','capacity_label'=>'Capacity / subtitle','seo_focus_keyword'=>'Focus keyword'] as $key=>$label) adminField($key,$label,$off[$key]??''); ?></div><?php adminField('short_desc','Description',$off['short_desc'],'textarea'); adminField('features','Features',implode("\n",json_decode($off['features_json']??'[]',true)?:[]),'textarea','One feature per line.'); adminField('whatsapp_custom_msg','WhatsApp enquiry message',$off['whatsapp_custom_msg'],'textarea'); adminField('offering_image','Replace photograph','','file'); adminSave('Save space'); ?></section><?php endforeach; ?>
