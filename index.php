@@ -64,6 +64,9 @@ $guestOptions = contentLines($settings['copy_guest_options']);
 <div class="space-copy"><span class="num"><?= str_pad((string)($n+1), 2, '0', STR_PAD_LEFT) ?></span><p class="kind"><?= esc($item['badge']) ?></p><h3><?= esc($item['title']) ?></h3><p><?= esc($item['short_desc']) ?></p>
 <?php if ($features): ?><ul class="features"><?php foreach ($features as $feature): ?><li><?= esc($feature) ?></li><?php endforeach; ?></ul><?php endif; ?>
 <?php if (!empty($item['capacity_label'])): ?><span class="cap"><?= esc($item['capacity_label']) ?></span><?php endif; ?>
+<?php if (isset(bookingRoutes()[$item['slug']])): ?>
+<p><a class="link" href="<?= esc(bookingRoutes()[$item['slug']]) ?>" aria-label="<?= esc($settings['copy_space_details'].' · '.$item['title']) ?>"><?= esc($settings['copy_space_details']) ?> <i aria-hidden="true">→</i></a></p>
+<?php endif; ?>
 <a class="link" href="<?= esc(buildWhatsAppUrl($settings['whatsapp_number'], $item['whatsapp_custom_msg'] ?: 'Hello, I would like to enquire about ' . $item['title'] . '.')) ?>" target="_blank" rel="noopener"><?= esc($settings['copy_space_cta']) ?><i>↗</i></a></div></article>
 <?php endforeach; ?></div></section>
 <section id="pool" class="pool"><figure class="photo"><img src="<?= esc($poolImage) ?>" alt="<?= esc($settings['copy_pool_image_alt']) ?>" width="1600" height="1000" loading="lazy" decoding="async" data-par="pool"></figure><div class="wrap" data-reveal><p class="kicker light"><?= esc($settings['copy_pool_kicker']) ?></p><h2 data-split><?= esc($settings['pool_heading']) ?></h2><p><?= esc($settings['pool_description']) ?></p><a class="btn solid" href="<?= esc(buildWhatsAppUrl($settings['whatsapp_number'], $settings['copy_pool_message'])) ?>" target="_blank" rel="noopener" data-magnetic><?= esc($settings['copy_pool_cta']) ?></a></div></section>
